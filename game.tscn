@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://c08fg1xiroqwb"]
+
+[ext_resource type="Texture2D" uid="uid://cubgwyanlk8wj" path="res://assets/grid.png" id="1_80nbo"]
+[ext_resource type="Script" uid="uid://cxe1k3oqs4jbs" path="res://game.gd" id="1_feb5d"]
+[ext_resource type="PackedScene" uid="uid://d2143siylaabu" path="res://scenes/grid_manager/grid_manager.tscn" id="2_e2o6t"]
+[ext_resource type="PackedScene" uid="uid://ddk13jk34n10n" path="res://scenes/ui_manager/ui_manager.tscn" id="4_fc0e3"]
+
+[node name="Game" type="Node" unique_id=554959532]
+script = ExtResource("1_feb5d")
+
+[node name="GridPositionMarker" type="Marker2D" parent="." unique_id=358100728]
+position = Vector2(13, 13)
+
+[node name="CenterCellMarker" type="Marker2D" parent="." unique_id=551085158]
+position = Vector2(216, 216)
+
+[node name="GridSprite" type="Sprite2D" parent="." unique_id=524240000]
+position = Vector2(224, 234)
+texture = ExtResource("1_80nbo")
+
+[node name="GridManager" parent="." unique_id=988794904 node_paths=PackedStringArray("position_marker", "center_cell_marker") instance=ExtResource("2_e2o6t")]
+position_marker = NodePath("../GridPositionMarker")
+center_cell_marker = NodePath("../CenterCellMarker")
+
+[node name="UIManager" parent="." unique_id=1133332590 node_paths=PackedStringArray("grid_manager") instance=ExtResource("4_fc0e3")]
+grid_manager = NodePath("../GridManager")

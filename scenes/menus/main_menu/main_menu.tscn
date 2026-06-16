@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://cb0o2ptu41xif"]
+
+[ext_resource type="Script" uid="uid://qcenyiu4husv" path="res://scenes/menus/main_menu/main_menu.gd" id="1_uhj5c"]
+[ext_resource type="PackedScene" uid="uid://ccdmiiqfx77gb" path="res://scenes/background/background.tscn" id="2_flk2s"]
+
+[node name="MainMenu" type="MarginContainer" unique_id=1470810832]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_uhj5c")
+
+[node name="Control" type="Control" parent="." unique_id=398395269]
+layout_mode = 2
+
+[node name="Background" parent="Control" unique_id=2099421624 instance=ExtResource("2_flk2s")]
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=113972469]
+custom_minimum_size = Vector2(132, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="SinglePlayerButton" type="Button" parent="VBoxContainer" unique_id=1872579560]
+layout_mode = 2
+text = "Deck Selection"
+
+[node name="MultiplayerButton" type="Button" parent="VBoxContainer" unique_id=1734522003]
+layout_mode = 2
+text = "Multiplayer"
+
+[node name="OptionsButton" type="Button" parent="VBoxContainer" unique_id=722576434]
+layout_mode = 2
+text = "Options"
+
+[node name="QuitButton" type="Button" parent="VBoxContainer" unique_id=92865397]
+layout_mode = 2
+text = "Quit"

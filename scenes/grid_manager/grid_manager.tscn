@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://d2143siylaabu"]
+
+[ext_resource type="Script" uid="uid://dndo1swfxcu1b" path="res://scenes/grid_manager/grid_manager.gd" id="1_hwchf"]
+
+[node name="GridManager" type="Control" unique_id=988794904]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_hwchf")
+
+[node name="GridContainer" type="GridContainer" parent="." unique_id=2084931022]
+layout_mode = 0
+theme_override_constants/h_separation = 13
+theme_override_constants/v_separation = 13
+columns = 15

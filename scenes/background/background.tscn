@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://ccdmiiqfx77gb"]
+
+[ext_resource type="Texture2D" uid="uid://b2i12l7xkbg1i" path="res://assets/background.png" id="2_sdl01"]
+
+[sub_resource type="Shader" id="Shader_ftkrq"]
+code = "shader_type canvas_item;
+
+void fragment() {
+	vec4 color = texture(TEXTURE, UV + vec2(.04 * TIME, .02 * TIME));
+	COLOR = color;
+}"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_i5wg5"]
+shader = SubResource("Shader_ftkrq")
+
+[node name="Background" type="Sprite2D" unique_id=2099421624]
+texture_repeat = 2
+material = SubResource("ShaderMaterial_i5wg5")
+position = Vector2(250, 250)
+rotation = -0.785397
+texture = ExtResource("2_sdl01")
+region_enabled = true
+region_rect = Rect2(0, 0, 1000, 1000)

@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://ddk13jk34n10n"]
+
+[ext_resource type="Script" uid="uid://dwpytb3hjcq4b" path="res://scenes/ui_manager/ui_manager.gd" id="1_nobtw"]
+
+[node name="UIManager" type="Node" unique_id=1133332590]
+script = ExtResource("1_nobtw")
+
+[node name="Stones" type="Node" parent="." unique_id=818578947]
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="." unique_id=1902015657]
+_spawnable_scenes = PackedStringArray("uid://dyrih8v8f0hie")
+spawn_path = NodePath("../Stones")

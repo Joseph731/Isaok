@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://dyrih8v8f0hie"]
+
+[ext_resource type="Texture2D" uid="uid://cgsah3xbqvpyq" path="res://assets/isaac_spritesheet.png" id="1_uoq2b"]
+[ext_resource type="Script" uid="uid://cntv3axpu2ux4" path="res://scenes/stone/stone.gd" id="2_47p22"]
+[ext_resource type="Texture2D" uid="uid://d0njdkl7w136c" path="res://assets/blue_baby_spritesheet.png" id="3_00ld3"]
+
+[sub_resource type="Animation" id="Animation_uoq2b"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="Animation" id="Animation_47p22"]
+resource_name = "recently_placed"
+length = 0.5
+loop_mode = 2
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [0, 1]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_00ld3"]
+_data = {
+&"RESET": SubResource("Animation_uoq2b"),
+&"recently_placed": SubResource("Animation_47p22")
+}
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_47p22"]
+properties/0/path = NodePath(".:global_position")
+properties/0/spawn = true
+properties/0/replication_mode = 0
+properties/1/path = NodePath("AnimationPlayer:current_animation")
+properties/1/spawn = true
+properties/1/replication_mode = 2
+properties/2/path = NodePath(".:texture_index")
+properties/2/spawn = true
+properties/2/replication_mode = 0
+
+[node name="Stone" type="Sprite2D" unique_id=1282066573]
+texture = ExtResource("1_uoq2b")
+hframes = 2
+script = ExtResource("2_47p22")
+texture_bank = Array[Texture2D]([ExtResource("3_00ld3"), ExtResource("1_uoq2b")])
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1226733565]
+libraries/ = SubResource("AnimationLibrary_00ld3")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=436613765]
+replication_config = SubResource("SceneReplicationConfig_47p22")
