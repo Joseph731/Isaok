@@ -2,8 +2,11 @@ extends Control
 class_name GridManager
 
 enum StoneType {EMPTY, BLACK, WHITE}
+enum GameState{SECOND, THIRD, FOURTH, NORMAL}
 
 signal stone_placed(cell: Button, stone_type: StoneType)
+signal third_move_finished
+signal fourth_move_finished
 
 @export var position_marker: Marker2D
 @export var center_cell_marker: Marker2D
@@ -24,6 +27,7 @@ var stone_grid: Array[Array] = []
 var servers_stone: StoneType
 var clients_stone: StoneType
 var is_servers_turn: bool = true
+var game_state: GameState = GameState.SECOND
 
 func _ready() -> void:
 	position = position_marker.position
@@ -86,6 +90,14 @@ func _on_cell_clicked(coords: Vector2i, cell_node: Button) -> void:
 
 @rpc("any_peer", "call_local", "reliable")
 func place_stone(coords: Vector2i, cell_node_path: String) -> void:
+	
+	#check if coords is in 3x3 in center of board
+	if game_state == GameState.SECOND && !coords_in_area(coords, Vector2i(6,6), 3):
+		return
+	#check if coords is in 5x5 in center of board
+	if game_state == GameState.THIRD && !coords_in_area(coords, Vector2i(5,5), 5):
+		return
+	
 	var stone_grid_pos: Vector2i
 	stone_grid_pos.x = coords.y
 	stone_grid_pos.y = coords.x
@@ -95,6 +107,12 @@ func place_stone(coords: Vector2i, cell_node_path: String) -> void:
 		stone_type = servers_stone
 	else:
 		stone_type = clients_stone
+	
+	if game_state == GameState.SECOND:
+		stone_type = StoneType.WHITE
+	elif game_state == GameState.THIRD:
+		stone_type = StoneType.BLACK
+	
 	
 	if stone_grid[stone_grid_pos.x][stone_grid_pos.y] != StoneType.EMPTY:
 		return
@@ -126,7 +144,18 @@ func place_stone(coords: Vector2i, cell_node_path: String) -> void:
 			return
 	
 	stone_placed.emit(get_node(cell_node_path), stone_grid[stone_grid_pos.x][stone_grid_pos.y])
-	is_servers_turn = !is_servers_turn
+	
+	if !game_state == GameState.SECOND:
+		is_servers_turn = !is_servers_turn
+	increment_game_state()
+
+func coords_in_area(coords: Vector2i, starting_pos: Vector2i, area_width_height: int) -> bool:
+	for y in range(starting_pos.y, starting_pos.y + area_width_height):
+		# Loop through 3 columns
+		for x in range(starting_pos.x, starting_pos.x + area_width_height):
+			if coords == Vector2i(x, y):
+				return true
+	return false
 
 func check_win(start_pos: Vector2i, stone_type: StoneType) -> bool:
 	for dir in DIRECTIONS:
@@ -250,9 +279,34 @@ func has_five_in_a_row(line: Array, stone_type: StoneType) -> bool:
 			return true
 	return false
 
-func _on_stone_selection_prompt_stone_selected(stone_type: StoneType) -> void:
+@rpc("any_peer", "call_local", "reliable")
+func set_peers_stone_types(stone_type: StoneType) -> void:
+	if multiplayer.get_remote_sender_id() == 1:
 		servers_stone = stone_type
 		if servers_stone == StoneType.BLACK:
 			clients_stone = StoneType.WHITE
 		else:
 			clients_stone = StoneType.BLACK
+	else:
+		clients_stone = stone_type
+		if clients_stone == StoneType.BLACK:
+			servers_stone = StoneType.WHITE
+		else:
+			servers_stone = StoneType.BLACK
+	
+	if game_state == GameState.SECOND:
+		is_servers_turn = servers_stone == StoneType.BLACK
+	if game_state == GameState.FOURTH:
+		is_servers_turn = servers_stone == StoneType.WHITE
+
+func increment_game_state() -> void:
+	# Get the maximum valid integer index (size - 1)
+	var max_game_state = GameState.size() - 1
+	# Clamp the value so it never exceeds the maximum
+	if game_state == GameState.THIRD:
+		third_move_finished.emit()
+	
+	if game_state == GameState.FOURTH:
+		fourth_move_finished.emit()
+	
+	game_state = min(int(game_state) + 1, max_game_state) as GameState

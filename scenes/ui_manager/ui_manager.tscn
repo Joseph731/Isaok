@@ -10,3 +10,21 @@ script = ExtResource("1_nobtw")
 [node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="." unique_id=1902015657]
 _spawnable_scenes = PackedStringArray("uid://dyrih8v8f0hie")
 spawn_path = NodePath("../Stones")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=864560291]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -23.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="FifthMovesCountLabel" type="Label" parent="MarginContainer" unique_id=417189262]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "There will be 9 fifth moves."
+horizontal_alignment = 1
+vertical_alignment = 1

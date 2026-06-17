@@ -1,0 +1,81 @@
+[gd_scene format=3 uid="uid://cghnoly1psgtq"]
+
+[ext_resource type="Script" uid="uid://btw2fh4718nnf" path="res://scenes/ui/fifth_moves_count_prompt/fifth_moves_count_prompt.gd" id="1_kd34w"]
+
+[node name="FifthMovesCountPrompt" type="Control" unique_id=192762231]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_kd34w")
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=918880305]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -50.0
+offset_top = -20.0
+offset_right = 50.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer" unique_id=1665801978]
+custom_minimum_size = Vector2(127, 0)
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer" unique_id=1911931151]
+layout_mode = 2
+text = "How many fifth moves will be offered?"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=1041768961]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="OneButton" type="Button" parent="PanelContainer/VBoxContainer/HBoxContainer" unique_id=94468563]
+custom_minimum_size = Vector2(24, 0)
+layout_mode = 2
+text = "1"
+
+[node name="TwoButton" type="Button" parent="PanelContainer/VBoxContainer/HBoxContainer" unique_id=447064319]
+custom_minimum_size = Vector2(24, 0)
+layout_mode = 2
+text = "2"
+
+[node name="ThreeButton" type="Button" parent="PanelContainer/VBoxContainer/HBoxContainer" unique_id=133982999]
+custom_minimum_size = Vector2(24, 0)
+layout_mode = 2
+text = "3"
+
+[node name="FourButton" type="Button" parent="PanelContainer/VBoxContainer/HBoxContainer" unique_id=1100987218]
+custom_minimum_size = Vector2(24, 0)
+layout_mode = 2
+text = "4"
+
+[node name="FiveButton" type="Button" parent="PanelContainer/VBoxContainer/HBoxContainer" unique_id=1395518624]
+custom_minimum_size = Vector2(24, 0)
+layout_mode = 2
+text = "5"
+
+[node name="SixButton" type="Button" parent="PanelContainer/VBoxContainer/HBoxContainer" unique_id=1063788919]
+custom_minimum_size = Vector2(24, 0)
+layout_mode = 2
+text = "6"
+
+[node name="SevenButton" type="Button" parent="PanelContainer/VBoxContainer/HBoxContainer" unique_id=1172139703]
+custom_minimum_size = Vector2(24, 0)
+layout_mode = 2
+text = "7"
+
+[node name="EightButton" type="Button" parent="PanelContainer/VBoxContainer/HBoxContainer" unique_id=1571753086]
+custom_minimum_size = Vector2(24, 0)
+layout_mode = 2
+text = "8"
