@@ -1,9 +1,14 @@
 extends Node
 
+const MAIN_MENU_SCENE_PATH: String = "res://scenes/menus/main_menu/main_menu.tscn"
+
 @onready var grid_manager: GridManager = $GridManager
 @onready var ui_manager: UIManager = $UIManager
+@onready var network_manager: NetworkManager = $NetworkManager
+@onready var pause_menu: PauseMenu = $PauseMenu
 
 func _ready() -> void:
+	pause_menu.quit_requested.connect(network_manager.end_game)
 	ui_manager.stone_selection_prompt_created.connect(_on_stone_selection_prompt_created)
 	ui_manager.fifth_moves_count_prompt_created.connect(_on_fifth_moves_count_prompt_created)
 
