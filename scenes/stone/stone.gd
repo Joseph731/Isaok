@@ -10,5 +10,11 @@ var texture_index: int = 0:
 		_update_texture()
 
 func _update_texture() -> void:
-	if texture_index >= 0 and texture_index < texture_bank.size():
+	if texture_index < 2:
 		texture = texture_bank[texture_index]
+	else:
+		texture = texture_bank[0]
+		if texture_index == 2:
+			modulate = Color.GREEN
+		else:
+			modulate = Color.RED

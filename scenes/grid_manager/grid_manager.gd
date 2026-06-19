@@ -1,12 +1,14 @@
 extends Control
 class_name GridManager
 
-enum StoneType {EMPTY, BLACK, WHITE}
-enum GameState{SECOND, THIRD, FOURTH, NORMAL}
+enum StoneType {EMPTY, BLACK, WHITE, FIFTH, BANNED}
+enum GameState{SECOND, THIRD, FOURTH, FIFTH, CHOOSE, NORMAL}
 
 signal stone_placed(cell: Button, stone_type: StoneType)
 signal third_move_finished
 signal fourth_move_finished
+signal fifth_move_finished
+signal choose_move_finished
 
 @export var position_marker: Marker2D
 @export var center_cell_marker: Marker2D
@@ -28,6 +30,8 @@ var servers_stone: StoneType
 var clients_stone: StoneType
 var is_servers_turn: bool = true
 var game_state: GameState = GameState.SECOND
+var fifth_moves_count: int = 0
+var grid_symmetry_data: Dictionary
 
 func _ready() -> void:
 	position = position_marker.position
@@ -112,22 +116,68 @@ func place_stone(coords: Vector2i, cell_node_path: String) -> void:
 		stone_type = StoneType.WHITE
 	elif game_state == GameState.THIRD:
 		stone_type = StoneType.BLACK
-	
-	
-	if stone_grid[stone_grid_pos.x][stone_grid_pos.y] != StoneType.EMPTY:
-		return
+	elif game_state == GameState.FIFTH:
+		stone_type = StoneType.FIFTH
+	elif game_state == GameState.CHOOSE:
+		stone_type = StoneType.BLACK
 	
 	if multiplayer.get_remote_sender_id() == 1:
-		if is_servers_turn:
-			stone_grid[stone_grid_pos.x][stone_grid_pos.y] = stone_type
-		else:
+		if !is_servers_turn:
 			return
 	else:
-		if !is_servers_turn:
-			stone_grid[stone_grid_pos.x][stone_grid_pos.y] = stone_type
-		else:
+		if is_servers_turn:
 			return
 	
+	var change_turns: bool = true
+	if game_state == GameState.CHOOSE:
+		change_turns = false
+		if stone_grid[coords.y][coords.x] != StoneType.FIFTH:
+			return
+	else:
+		if stone_grid[coords.y][coords.x] != StoneType.EMPTY:
+			return
+	
+	stone_grid[coords.y][coords.x] = stone_type
+	
+	if game_state == GameState.FIFTH:
+		if grid_symmetry_data["left_right"]:
+			print("left right symmetry detected")
+			if Vector2i(coords.y, coords.x) != Vector2i(coords.y, 2*7 - coords.x):
+				stone_grid[coords.y][2*7 - coords.x] = StoneType.BANNED
+				var cell = Button.new()
+				cell.custom_minimum_size = CELL_MIN_SIZE
+				cell.global_position = position_marker.global_position + Vector2(coords * 29)
+				cell.global_position.x = 2 * center_cell_marker.global_position.x - cell.global_position.x
+				stone_placed.emit(cell, stone_grid[coords.y][2*7 - coords.x])
+		elif grid_symmetry_data["top_bottom"]:
+			print("top bottom symmetry detected")
+			if Vector2i(coords.y, coords.x) != Vector2i(2*7 - coords.y, coords.x):
+				stone_grid[2*7 - coords.y][coords.x] = StoneType.BANNED
+				var cell = Button.new()
+				cell.custom_minimum_size = CELL_MIN_SIZE
+				cell.global_position = position_marker.global_position + Vector2(coords * 29)
+				cell.global_position.y = 2 * center_cell_marker.global_position.y - cell.global_position.y
+				stone_placed.emit(cell, stone_grid[2*7 - coords.y][coords.x])
+		elif grid_symmetry_data["main_diagonal"]:
+			print("main symmetry detected")
+			if Vector2i(coords.y, coords.x) != Vector2i(coords.x, coords.y):
+				stone_grid[coords.x][coords.y] = StoneType.BANNED
+				var cell = Button.new()
+				cell.custom_minimum_size = CELL_MIN_SIZE
+				cell.global_position = position_marker.global_position + Vector2(coords * 29)
+				cell.global_position = Vector2i(cell.global_position.y, cell.global_position.x)
+				stone_placed.emit(cell, stone_grid[coords.x][coords.y])
+		elif grid_symmetry_data["anti_diagonal"]:
+			print("anti symmetry detected")
+			if Vector2i(coords.y, coords.x) != Vector2i(GRID_SIZE - 1 - coords.x, GRID_SIZE - 1 - coords.y):
+				stone_grid[GRID_SIZE - 1 - coords.x][GRID_SIZE - 1 - coords.y] = StoneType.BANNED
+				var cell = Button.new()
+				cell.custom_minimum_size = CELL_MIN_SIZE
+				cell.global_position = position_marker.global_position + Vector2(coords * 29)
+				cell.global_position = Vector2i(position_marker.global_position.y * 2 + 29 * (GRID_SIZE-1) - cell.global_position.y, position_marker.global_position.x * 2 + 29 * (GRID_SIZE-1) - cell.global_position.x)
+				stone_placed.emit(cell, stone_grid[GRID_SIZE - 1 - coords.x][GRID_SIZE - 1 - coords.y])
+		
+		
 	if check_win(stone_grid_pos, stone_type):
 		if stone_type == StoneType.BLACK:
 			print("Black Winner!")
@@ -136,18 +186,24 @@ func place_stone(coords: Vector2i, cell_node_path: String) -> void:
 	else:
 		if stone_type == StoneType.BLACK && violates_three_and_three(stone_grid_pos, stone_type):
 			print("Move rejected: Violates the Three-and-Three rule!")
-			stone_grid[stone_grid_pos.x][stone_grid_pos.y] = StoneType.EMPTY # Undo the move
+			stone_grid[coords.y][coords.x] = StoneType.EMPTY # Undo the move
 			return
 		if stone_type == StoneType.BLACK && violates_four_and_four(stone_grid_pos, stone_type):
 			print("Move rejected: Violates the Four-and-Four rule!")
-			stone_grid[stone_grid_pos.x][stone_grid_pos.y] = 0 # Rollback the move
+			stone_grid[coords.y][coords.x] = StoneType.EMPTY # Undo the move
 			return
 	
-	stone_placed.emit(get_node(cell_node_path), stone_grid[stone_grid_pos.x][stone_grid_pos.y])
+	stone_placed.emit(get_node(cell_node_path), stone_grid[coords.y][coords.x])
 	
-	if !game_state == GameState.SECOND:
+	if game_state == GameState.FIFTH:
+		fifth_moves_count -= 1
+	if fifth_moves_count == 0:
+		increment_game_state()
+	
+	if change_turns:
+		change_turns = game_state != GameState.THIRD && game_state != GameState.FIFTH
+	if change_turns:
 		is_servers_turn = !is_servers_turn
-	increment_game_state()
 
 func coords_in_area(coords: Vector2i, starting_pos: Vector2i, area_width_height: int) -> bool:
 	for y in range(starting_pos.y, starting_pos.y + area_width_height):
@@ -298,6 +354,8 @@ func set_peers_stone_types(stone_type: StoneType) -> void:
 		is_servers_turn = servers_stone == StoneType.BLACK
 	if game_state == GameState.FOURTH:
 		is_servers_turn = servers_stone == StoneType.WHITE
+	if game_state == GameState.FIFTH:
+		is_servers_turn = servers_stone == StoneType.BLACK
 
 func increment_game_state() -> void:
 	# Get the maximum valid integer index (size - 1)
@@ -308,5 +366,93 @@ func increment_game_state() -> void:
 	
 	if game_state == GameState.FOURTH:
 		fourth_move_finished.emit()
+		grid_symmetry_data = check_board_symmetry()
+	
+	if game_state == GameState.FIFTH:
+		fifth_move_finished.emit()
+		empty_stone_type_in_stone_grid(StoneType.BANNED)
+	
+	if game_state == GameState.CHOOSE:
+		choose_move_finished.emit()
+		empty_stone_type_in_stone_grid(StoneType.FIFTH)
 	
 	game_state = min(int(game_state) + 1, max_game_state) as GameState
+
+@rpc("any_peer", "call_local", "reliable")
+func switch_whose_turn_it_is() -> void:
+	is_servers_turn = !is_servers_turn
+
+@rpc("any_peer", "call_local", "reliable")
+func set_fifth_moves_count(move_count: int) -> void:
+	fifth_moves_count = move_count
+
+func empty_stone_type_in_stone_grid(stone_type: StoneType):
+	for row in stone_grid.size():
+		for column in stone_grid[row].size():
+			if stone_grid[row][column] == stone_type:
+				stone_grid[row][column] = StoneType.EMPTY
+
+# Checks if the board has ANY type of line symmetry
+func check_board_symmetry() -> Dictionary:
+	return {
+		"left_right": is_left_right_symmetrical(),
+		"top_bottom": is_top_bottom_symmetrical(),
+		"main_diagonal": is_main_diagonal_symmetrical(),
+		"anti_diagonal": is_anti_diagonal_symmetrical()
+	}
+
+# Horizontal Symmetry (Left side mirrors Right side)
+func is_left_right_symmetrical() -> bool:
+	var total_rows = stone_grid.size()
+	var total_cols = stone_grid[0].size()
+	var max_col_idx = total_cols - 1
+	
+	# Only loop through the left half of the columns
+	for row in range(total_rows):
+		@warning_ignore("integer_division")
+		for col in range(total_cols/2):
+			if stone_grid[row][col] != stone_grid[row][max_col_idx - col]:
+				return false # Mismatch found
+	
+	return true
+
+# Top half mirrors Bottom half (Reflection across a horizontal center axis)
+func is_top_bottom_symmetrical() -> bool:
+	var total_rows = stone_grid.size()
+	var total_cols = stone_grid[0].size()
+	var max_row_idx = total_rows - 1
+	
+	# Loop through only half of the rows, but every column
+	@warning_ignore("integer_division")
+	for row in range(total_rows / 2):
+		for col in range(total_cols):
+			# The column stays the same, the row mirrors to the opposite side
+			if stone_grid[row][col] != stone_grid[max_row_idx - row][col]:
+				return false
+	return true
+
+# Main Diagonal Symmetry ("\")
+func is_main_diagonal_symmetrical() -> bool:
+	var total_rows = stone_grid.size()
+	
+	for row in range(total_rows):
+		# Only loop through the triangle below the diagonal line (col < row)
+		for col in range(row):
+			# Swap the row and column indices to check the reflection
+			if stone_grid[row][col] != stone_grid[col][row]:
+				return false
+	return true
+
+# Anti-Diagonal Symmetry ("/")
+func is_anti_diagonal_symmetrical() -> bool:
+	var total_rows = stone_grid.size()
+	var max_idx = total_rows - 1
+	
+	for row in range(total_rows):
+		# Only loop through the triangle above the anti-diagonal line
+		for col in range(max_idx - row):
+			var mirror_row = max_idx - col
+			var mirror_col = max_idx - row
+			if stone_grid[row][col] != stone_grid[mirror_row][mirror_col]:
+				return false
+	return true
