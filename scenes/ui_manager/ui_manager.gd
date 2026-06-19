@@ -8,6 +8,7 @@ signal fifth_moves_count_prompt_created(fifth_moves_count_prompt: FifthMovesCoun
 
 @onready var stones: Node = $Stones
 @onready var fifth_moves_count_label: Label = $MarginContainer/FifthMovesCountLabel
+@onready var prompt_spawner: MultiplayerSpawner = $PromptSpawner
 
 const STONE: PackedScene = preload("uid://dyrih8v8f0hie")
 const STONE_SELECTION_PROMPT: PackedScene = preload("uid://dly5k3xygv7tn")
@@ -18,13 +19,14 @@ var fifth_stones: Array[Stone]
 var banned_stones: Array[Stone]
 
 func _ready() -> void:
+	prompt_spawner.spawned.connect(_on_prompt_spawned)
 	grid_manager.stone_placed.connect(_on_stone_placed)
 	grid_manager.third_move_finished.connect(_on_third_move_finished)
 	grid_manager.fourth_move_finished.connect(_on_fourth_move_finished)
 	grid_manager.fifth_move_finished.connect(_on_fifth_move_finished)
 	grid_manager.choose_move_finished.connect(_on_choose_move_finished)
 	if is_multiplayer_authority():
-		create_stone_selection_prompt()
+		create_stone_selection_prompt(true)
 
 func _on_stone_placed(cell: Button, stone_type: GridManager.StoneType) -> void:
 	var stone: Stone = STONE.instantiate()
@@ -49,32 +51,33 @@ func _on_stone_placed(cell: Button, stone_type: GridManager.StoneType) -> void:
 
 func _on_third_move_finished() -> void:
 	if grid_manager.servers_stone == GridManager.StoneType.WHITE:
-		create_stone_selection_prompt()
+		create_stone_selection_prompt(true)
 	else:
-		create_stone_selection_prompt.rpc_id(multiplayer.get_peers()[0])
+		create_stone_selection_prompt(false)
 
 @rpc("any_peer", "call_local", "reliable")
-func create_stone_selection_prompt() -> void:
+func create_stone_selection_prompt(is_for_server: bool) -> void:
 	var stone_selection_prompt: StoneSelectionPrompt = STONE_SELECTION_PROMPT.instantiate()
 	stone_selection_prompt_created.emit.call_deferred(stone_selection_prompt)
 	add_child(stone_selection_prompt)
+	stone_selection_prompt.is_for_server = is_for_server
 
 func _on_fourth_move_finished() -> void:
 	if grid_manager.servers_stone == GridManager.StoneType.WHITE:
-		create_fifth_moves_count_prompt()
+		create_fifth_moves_count_prompt(true)
 	else:
-		create_fifth_moves_count_prompt.rpc_id(multiplayer.get_peers()[0])
+		create_fifth_moves_count_prompt(false)
 
-@rpc("authority", "call_local", "reliable")
-func create_fifth_moves_count_prompt() -> void:
+func create_fifth_moves_count_prompt(is_for_server: bool) -> void:
 	var fifth_moves_count_prompt: FifthMovesCountPrompt = FIFTH_MOVES_COUNT_PROMPT.instantiate()
 	fifth_moves_count_prompt_created.emit(fifth_moves_count_prompt)
 	fifth_moves_count_prompt.fifth_moves_count_selected.connect(_on_fifth_moves_count_selected)
 	add_child(fifth_moves_count_prompt)
+	fifth_moves_count_prompt.is_for_server = is_for_server
 
-func _on_fifth_moves_count_selected(moves_count: int) -> void:
+func _on_fifth_moves_count_selected(moves_count: int, _fifth_moves_count_prompt: FifthMovesCountPrompt) -> void:
 	set_fifth_moves_count_text.rpc(moves_count)
-	create_stone_selection_prompt.rpc_id(multiplayer.get_peers()[0])
+	create_stone_selection_prompt.rpc_id(1, !multiplayer.is_server())
 
 @rpc("any_peer", "call_local", "reliable")
 func set_fifth_moves_count_text(moves_count: int) -> void:
@@ -90,3 +93,12 @@ func _on_choose_move_finished() -> void:
 	for fifth_stone in fifth_stones:
 		fifth_stone.queue_free()
 	fifth_stones.clear()
+
+func _on_prompt_spawned(prompt: Node) -> void:
+	if multiplayer.is_server():
+		return
+	if prompt is StoneSelectionPrompt:
+		stone_selection_prompt_created.emit(prompt)
+	if prompt is FifthMovesCountPrompt:
+		fifth_moves_count_prompt_created.emit(prompt)
+		prompt.fifth_moves_count_selected.connect(_on_fifth_moves_count_selected)

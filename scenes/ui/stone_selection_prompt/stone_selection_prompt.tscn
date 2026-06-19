@@ -2,7 +2,13 @@
 
 [ext_resource type="Script" uid="uid://b0tw5h3pc8jih" path="res://scenes/ui/stone_selection_prompt/stone_selection_prompt.gd" id="1_ob5ct"]
 
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_ob5ct"]
+properties/0/path = NodePath(".:is_for_server")
+properties/0/spawn = false
+properties/0/replication_mode = 2
+
 [node name="StoneSelectionPrompt" type="Control" unique_id=192762231]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -47,3 +53,6 @@ text = "Black"
 [node name="WhiteButton" type="Button" parent="PanelContainer/VBoxContainer/HBoxContainer" unique_id=497194117]
 layout_mode = 2
 text = "White"
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1568377184]
+replication_config = SubResource("SceneReplicationConfig_ob5ct")

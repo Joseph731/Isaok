@@ -2,7 +2,13 @@
 
 [ext_resource type="Script" uid="uid://btw2fh4718nnf" path="res://scenes/ui/fifth_moves_count_prompt/fifth_moves_count_prompt.gd" id="1_kd34w"]
 
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_kd34w"]
+properties/0/path = NodePath(".:is_for_server")
+properties/0/spawn = false
+properties/0/replication_mode = 2
+
 [node name="FifthMovesCountPrompt" type="Control" unique_id=192762231]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -79,3 +85,6 @@ text = "7"
 custom_minimum_size = Vector2(24, 0)
 layout_mode = 2
 text = "8"
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1322656707]
+replication_config = SubResource("SceneReplicationConfig_kd34w")
