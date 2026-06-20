@@ -28,9 +28,9 @@ func _ready() -> void:
 	if is_multiplayer_authority():
 		create_stone_selection_prompt(true)
 
-func _on_stone_placed(cell: Button, stone_type: GridManager.StoneType) -> void:
+func _on_stone_placed(cell_global_position: Vector2, cell_size: Vector2, stone_type: GridManager.StoneType) -> void:
 	var stone: Stone = STONE.instantiate()
-	stone.global_position = cell.global_position + cell.size / 2
+	stone.global_position = cell_global_position + cell_size / 2
 	if stone_type == GridManager.StoneType.BLACK:
 		stone.texture_index = 0
 	elif stone_type == GridManager.StoneType.WHITE:

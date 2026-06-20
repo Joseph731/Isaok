@@ -4,7 +4,7 @@ class_name GridManager
 enum StoneType {EMPTY, BLACK, WHITE, FIFTH, BANNED}
 enum GameState{SECOND, THIRD, FOURTH, FIFTH, CHOOSE, NORMAL}
 
-signal stone_placed(cell: Button, stone_type: StoneType)
+signal stone_placed(cell_global_position: Vector2, cell_size: Vector2, stone_type: StoneType)
 signal third_move_finished
 signal fourth_move_finished
 signal fifth_move_finished
@@ -35,14 +35,12 @@ var grid_symmetry_data: Dictionary
 
 func _ready() -> void:
 	position = position_marker.position
-	
 	setup_grid()
 	
 	if !is_multiplayer_authority():
 		return
 	
 	stone_grid.resize(GRID_SIZE)
-	
 	for y in range(GRID_SIZE):
 		# Create the row and strictly enforce that it ONLY holds your Enum/ints
 		var row: Array[int] = [] 
@@ -53,10 +51,8 @@ func _ready() -> void:
 		stone_grid[y] = row
 		
 	stone_grid[7][7] = StoneType.BLACK
-	var cell = Button.new()
-	cell.custom_minimum_size = CELL_MIN_SIZE
-	cell.global_position = center_cell_marker.global_position
-	stone_placed.emit.call_deferred(cell, stone_grid[7][7])
+	var cell_global_position: Vector2 = center_cell_marker.global_position
+	stone_placed.emit.call_deferred(cell_global_position, CELL_MIN_SIZE, stone_grid[7][7])
 
 func setup_grid() -> void:
 	# Clear any existing children just in case
@@ -144,38 +140,30 @@ func place_stone(coords: Vector2i, cell_node_path: String) -> void:
 			print("left right symmetry detected")
 			if Vector2i(coords.y, coords.x) != Vector2i(coords.y, 2*7 - coords.x):
 				stone_grid[coords.y][2*7 - coords.x] = StoneType.BANNED
-				var cell = Button.new()
-				cell.custom_minimum_size = CELL_MIN_SIZE
-				cell.global_position = position_marker.global_position + Vector2(coords * 29)
-				cell.global_position.x = 2 * center_cell_marker.global_position.x - cell.global_position.x
-				stone_placed.emit(cell, stone_grid[coords.y][2*7 - coords.x])
+				var cell_global_position: Vector2 = position_marker.global_position + Vector2(coords * 29)
+				cell_global_position.x = 2 * center_cell_marker.global_position.x - cell_global_position.x
+				stone_placed.emit(cell_global_position, CELL_MIN_SIZE, stone_grid[coords.y][2*7 - coords.x])
 		elif grid_symmetry_data["top_bottom"]:
 			print("top bottom symmetry detected")
 			if Vector2i(coords.y, coords.x) != Vector2i(2*7 - coords.y, coords.x):
 				stone_grid[2*7 - coords.y][coords.x] = StoneType.BANNED
-				var cell = Button.new()
-				cell.custom_minimum_size = CELL_MIN_SIZE
-				cell.global_position = position_marker.global_position + Vector2(coords * 29)
-				cell.global_position.y = 2 * center_cell_marker.global_position.y - cell.global_position.y
-				stone_placed.emit(cell, stone_grid[2*7 - coords.y][coords.x])
+				var cell_global_position: Vector2 = position_marker.global_position + Vector2(coords * 29)
+				cell_global_position.y = 2 * center_cell_marker.global_position.y - cell_global_position.y
+				stone_placed.emit(cell_global_position, CELL_MIN_SIZE, stone_grid[2*7 - coords.y][coords.x])
 		elif grid_symmetry_data["main_diagonal"]:
 			print("main symmetry detected")
 			if Vector2i(coords.y, coords.x) != Vector2i(coords.x, coords.y):
 				stone_grid[coords.x][coords.y] = StoneType.BANNED
-				var cell = Button.new()
-				cell.custom_minimum_size = CELL_MIN_SIZE
-				cell.global_position = position_marker.global_position + Vector2(coords * 29)
-				cell.global_position = Vector2i(cell.global_position.y, cell.global_position.x)
-				stone_placed.emit(cell, stone_grid[coords.x][coords.y])
+				var cell_global_position: Vector2 = position_marker.global_position + Vector2(coords * 29)
+				cell_global_position = Vector2(cell_global_position.y, cell_global_position.x)
+				stone_placed.emit(cell_global_position, CELL_MIN_SIZE, stone_grid[coords.x][coords.y])
 		elif grid_symmetry_data["anti_diagonal"]:
 			print("anti symmetry detected")
 			if Vector2i(coords.y, coords.x) != Vector2i(GRID_SIZE - 1 - coords.x, GRID_SIZE - 1 - coords.y):
 				stone_grid[GRID_SIZE - 1 - coords.x][GRID_SIZE - 1 - coords.y] = StoneType.BANNED
-				var cell = Button.new()
-				cell.custom_minimum_size = CELL_MIN_SIZE
-				cell.global_position = position_marker.global_position + Vector2(coords * 29)
-				cell.global_position = Vector2i(position_marker.global_position.y * 2 + 29 * (GRID_SIZE-1) - cell.global_position.y, position_marker.global_position.x * 2 + 29 * (GRID_SIZE-1) - cell.global_position.x)
-				stone_placed.emit(cell, stone_grid[GRID_SIZE - 1 - coords.x][GRID_SIZE - 1 - coords.y])
+				var cell_global_position: Vector2 = position_marker.global_position + Vector2(coords * 29)
+				cell_global_position = Vector2(position_marker.global_position.y * 2 + 29 * (GRID_SIZE-1) - cell_global_position.y, position_marker.global_position.x * 2 + 29 * (GRID_SIZE-1) - cell_global_position.x)
+				stone_placed.emit(cell_global_position, CELL_MIN_SIZE, stone_grid[GRID_SIZE - 1 - coords.x][GRID_SIZE - 1 - coords.y])
 		
 		
 	if check_win(stone_grid_pos, stone_type):
@@ -193,7 +181,7 @@ func place_stone(coords: Vector2i, cell_node_path: String) -> void:
 			stone_grid[coords.y][coords.x] = StoneType.EMPTY # Undo the move
 			return
 	
-	stone_placed.emit(get_node(cell_node_path), stone_grid[coords.y][coords.x])
+	stone_placed.emit(get_node(cell_node_path).global_position, CELL_MIN_SIZE, stone_grid[coords.y][coords.x])
 	
 	if game_state == GameState.FIFTH:
 		fifth_moves_count -= 1
