@@ -2,6 +2,20 @@
 
 [ext_resource type="Script" uid="uid://dwpytb3hjcq4b" path="res://scenes/ui_manager/ui_manager.gd" id="1_nobtw"]
 
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_nobtw"]
+properties/0/path = NodePath("MarginContainer/WhoseTurnLabel:text")
+properties/0/spawn = false
+properties/0/replication_mode = 2
+properties/1/path = NodePath("MarginContainer/TurnTimerLabel:text")
+properties/1/spawn = false
+properties/1/replication_mode = 2
+properties/2/path = NodePath("MarginContainer/CenterLabel:text")
+properties/2/spawn = false
+properties/2/replication_mode = 2
+properties/3/path = NodePath("MarginContainer/CenterLabel:visible")
+properties/3/spawn = false
+properties/3/replication_mode = 2
+
 [node name="UIManager" type="Node" unique_id=1133332590]
 script = ExtResource("1_nobtw")
 
@@ -24,11 +38,31 @@ offset_top = -23.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
+theme_override_constants/margin_left = 2
+theme_override_constants/margin_right = 2
 
-[node name="FifthMovesCountLabel" type="Label" parent="MarginContainer" unique_id=417189262]
-visible = false
+[node name="WhoseTurnLabel" type="Label" parent="MarginContainer" unique_id=742183636]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-text = "There will be 9 fifth moves."
+theme_override_font_sizes/font_size = 11
+text = "Black's turn"
+vertical_alignment = 1
+
+[node name="CenterLabel" type="Label" parent="MarginContainer" unique_id=417189262]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 13
+text = "Place stone in center 3x3"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="TurnTimerLabel" type="Label" parent="MarginContainer" unique_id=1690054569]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 11
+text = "10:00"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1775470674]
+replication_config = SubResource("SceneReplicationConfig_nobtw")

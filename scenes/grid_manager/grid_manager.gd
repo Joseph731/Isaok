@@ -4,7 +4,9 @@ class_name GridManager
 enum StoneType {EMPTY, BLACK, WHITE, FIFTH, BANNED}
 enum GameState{SECOND, THIRD, FOURTH, FIFTH, CHOOSE, NORMAL}
 
+signal turn_switched(is_servers_turn: bool)
 signal stone_placed(cell_global_position: Vector2, cell_size: Vector2, stone_type: StoneType)
+signal second_move_finished
 signal third_move_finished
 signal fourth_move_finished
 signal fifth_move_finished
@@ -28,10 +30,20 @@ const DIRECTIONS = [
 var stone_grid: Array[Array] = []
 var servers_stone: StoneType
 var clients_stone: StoneType
-var is_servers_turn: bool = true
 var game_state: GameState = GameState.SECOND
+var initial_fifth_moves_count: int = 0
+var lone_fifth_move_coords: Vector2i
 var fifth_moves_count: int = 0
 var grid_symmetry_data: Dictionary
+
+var _is_servers_turn: bool = true
+var is_servers_turn: bool:
+	get:
+		return _is_servers_turn
+	set(value):
+		if _is_servers_turn != value:
+			turn_switched.emit(value)
+		_is_servers_turn = value
 
 func _ready() -> void:
 	position = position_marker.position
@@ -136,6 +148,8 @@ func place_stone(coords: Vector2i, cell_node_path: String) -> void:
 	stone_grid[coords.y][coords.x] = stone_type
 	
 	if game_state == GameState.FIFTH:
+		if initial_fifth_moves_count == 1:
+			lone_fifth_move_coords = coords
 		if grid_symmetry_data["left_right"]:
 			print("left right symmetry detected")
 			if Vector2i(coords.y, coords.x) != Vector2i(coords.y, 2*7 - coords.x):
@@ -349,6 +363,9 @@ func increment_game_state() -> void:
 	# Get the maximum valid integer index (size - 1)
 	var max_game_state = GameState.size() - 1
 	# Clamp the value so it never exceeds the maximum
+	if game_state == GameState.SECOND:
+		second_move_finished.emit()
+	
 	if game_state == GameState.THIRD:
 		third_move_finished.emit()
 	
@@ -359,12 +376,19 @@ func increment_game_state() -> void:
 	if game_state == GameState.FIFTH:
 		fifth_move_finished.emit()
 		empty_stone_type_in_stone_grid(StoneType.BANNED)
+		if initial_fifth_moves_count == 1:
+			stone_grid[lone_fifth_move_coords.y][lone_fifth_move_coords.x] = StoneType.BLACK
+			var cell_global_position: Vector2 = position_marker.global_position + Vector2(lone_fifth_move_coords * 29)
+			stone_placed.emit(cell_global_position, CELL_MIN_SIZE, stone_grid[lone_fifth_move_coords.y][lone_fifth_move_coords.x])
 	
 	if game_state == GameState.CHOOSE:
 		choose_move_finished.emit()
 		empty_stone_type_in_stone_grid(StoneType.FIFTH)
 	
 	game_state = min(int(game_state) + 1, max_game_state) as GameState
+	
+	if game_state == GameState.CHOOSE && initial_fifth_moves_count == 1:
+		increment_game_state()
 
 @rpc("any_peer", "call_local", "reliable")
 func switch_whose_turn_it_is() -> void:
@@ -372,7 +396,8 @@ func switch_whose_turn_it_is() -> void:
 
 @rpc("any_peer", "call_local", "reliable")
 func set_fifth_moves_count(move_count: int) -> void:
-	fifth_moves_count = move_count
+	initial_fifth_moves_count = move_count
+	fifth_moves_count = initial_fifth_moves_count
 
 func empty_stone_type_in_stone_grid(stone_type: StoneType):
 	for row in stone_grid.size():
