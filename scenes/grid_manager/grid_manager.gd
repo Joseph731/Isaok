@@ -269,7 +269,10 @@ func is_open_three_on_axis(start_pos: Vector2i, direction: Vector2i, stone_type:
 			line.append(stone_grid[check_pos.x][check_pos.y])
 		else:
 			line.append(-1) # -1 represents an out-of-bounds boundary block
-			
+	# FIX: If this axis ALREADY contains an open four, it is a four-row threat, 
+	# NOT an open three. We return false immediately.
+	if contains_open_four(line, stone_type):
+		return false
 	# 2. Simulate playing an additional stone on every empty slot ('0') in this window
 	for j in range(9):
 		if line[j] == 0:
@@ -278,15 +281,20 @@ func is_open_three_on_axis(start_pos: Vector2i, direction: Vector2i, stone_type:
 			
 			# 3. Check if this next move creates a perfect "Open Four"
 			# A perfect Open Four pattern is strictly: [0, id, id, id, id, 0]
-			for k in range(4): # Slide a 6-cell window across our 9-cell line
-				if test_line[k] == 0 \
-				and test_line[k+1] == stone_type \
-				and test_line[k+2] == stone_type \
-				and test_line[k+3] == stone_type \
-				and test_line[k+4] == stone_type \
-				and test_line[k+5] == 0:
-					return true # An open three exists on this axis!
-					
+			if contains_open_four(test_line, stone_type): # Slide a 6-cell window across our 9-cell line
+				return true
+	return false
+
+# Helper function to find a clean, unblocked open four profile (. 1 1 1 1 .)
+func contains_open_four(line: Array, player_id: int) -> bool:
+	for k in range(4): 
+		if line[k] == 0 \
+		and line[k+1] == player_id \
+		and line[k+2] == player_id \
+		and line[k+3] == player_id \
+		and line[k+4] == player_id \
+		and line[k+5] == 0:
+			return true
 	return false
 
 func violates_four_and_four(start_pos: Vector2i, stone_type: StoneType) -> bool:
