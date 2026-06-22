@@ -3,6 +3,7 @@ class_name GridManager
 
 enum StoneType {EMPTY, BLACK, WHITE, FIFTH, BANNED}
 enum GameState{SECOND, THIRD, FOURTH, FIFTH, CHOOSE, NORMAL}
+enum GameOutcome{UNDECIDED, BLACK_WIN, WHITE_WIN, DRAW}
 
 signal turn_switched(is_servers_turn: bool)
 signal stone_placed(cell_global_position: Vector2, cell_size: Vector2, stone_type: StoneType)
@@ -11,6 +12,7 @@ signal third_move_finished
 signal fourth_move_finished
 signal fifth_move_finished
 signal choose_move_finished
+signal game_outcome_decided(game_outcome: GameOutcome)
 
 @export var position_marker: Marker2D
 @export var center_cell_marker: Marker2D
@@ -35,6 +37,15 @@ var initial_fifth_moves_count: int = 0
 var lone_fifth_move_coords: Vector2i
 var fifth_moves_count: int = 0
 var grid_symmetry_data: Dictionary
+var stones_on_the_grid: int = 0
+
+var _game_outcome: GameOutcome = GameOutcome.UNDECIDED
+var game_outcome: GameOutcome:
+	get:
+		return _game_outcome
+	set(value):
+		_game_outcome = value
+		game_outcome_decided.emit(game_outcome)
 
 var _is_servers_turn: bool = true
 var is_servers_turn: bool:
@@ -102,7 +113,8 @@ func _on_cell_clicked(coords: Vector2i, cell_node: Button) -> void:
 
 @rpc("any_peer", "call_local", "reliable")
 func place_stone(coords: Vector2i, cell_node_path: String) -> void:
-	
+	if game_outcome != GameOutcome.UNDECIDED:
+		return
 	#check if coords is in 3x3 in center of board
 	if game_state == GameState.SECOND && !coords_in_area(coords, Vector2i(6,6), 3):
 		return
@@ -146,6 +158,7 @@ func place_stone(coords: Vector2i, cell_node_path: String) -> void:
 			return
 	
 	stone_grid[coords.y][coords.x] = stone_type
+	stones_on_the_grid += 1
 	
 	if game_state == GameState.FIFTH:
 		if initial_fifth_moves_count == 1:
@@ -183,17 +196,24 @@ func place_stone(coords: Vector2i, cell_node_path: String) -> void:
 	if check_win(stone_grid_pos, stone_type):
 		if stone_type == StoneType.BLACK:
 			print("Black Winner!")
+			game_outcome = GameOutcome.BLACK_WIN
 		else:
 			print("White Winner!")
-	else:
-		if stone_type == StoneType.BLACK && violates_three_and_three(stone_grid_pos, stone_type):
+			game_outcome = GameOutcome.WHITE_WIN
+	elif stone_type == StoneType.BLACK:
+		if violates_three_and_three(stone_grid_pos, stone_type):
 			print("Move rejected: Violates the Three-and-Three rule!")
 			stone_grid[coords.y][coords.x] = StoneType.EMPTY # Undo the move
+			stones_on_the_grid -= 1
 			return
-		if stone_type == StoneType.BLACK && violates_four_and_four(stone_grid_pos, stone_type):
+		if violates_four_and_four(stone_grid_pos, stone_type):
 			print("Move rejected: Violates the Four-and-Four rule!")
 			stone_grid[coords.y][coords.x] = StoneType.EMPTY # Undo the move
+			stones_on_the_grid -= 1
 			return
+	if game_outcome == GameOutcome.UNDECIDED && stones_on_the_grid == GRID_SIZE * GRID_SIZE:
+		print("Draw!")
+		game_outcome = GameOutcome.DRAW
 	
 	stone_placed.emit(get_node(cell_node_path).global_position, CELL_MIN_SIZE, stone_grid[coords.y][coords.x])
 	
@@ -205,7 +225,7 @@ func place_stone(coords: Vector2i, cell_node_path: String) -> void:
 	if change_turns:
 		change_turns = game_state != GameState.THIRD && game_state != GameState.FIFTH
 	if change_turns:
-		is_servers_turn = !is_servers_turn
+		switch_whose_turn_it_is()
 
 func coords_in_area(coords: Vector2i, starting_pos: Vector2i, area_width_height: int) -> bool:
 	for y in range(starting_pos.y, starting_pos.y + area_width_height):
@@ -275,7 +295,7 @@ func is_open_three_on_axis(start_pos: Vector2i, direction: Vector2i, stone_type:
 		return false
 	# 2. Simulate playing an additional stone on every empty slot ('0') in this window
 	for j in range(9):
-		if line[j] == 0:
+		if line[j] == StoneType.EMPTY:
 			var test_line = line.duplicate()
 			test_line[j] = stone_type # Hypothethical next move
 			
@@ -323,7 +343,7 @@ func is_four_on_axis(start_pos: Vector2i, direction: Vector2i, stone_type: Stone
 			
 	# Simulate playing an additional stone on every empty slot ('0') in this window
 	for j in range(9):
-		if line[j] == 0:
+		if line[j] == StoneType.EMPTY:
 			var test_line = line.duplicate()
 			test_line[j] = stone_type # Hypothethical next move
 			
@@ -345,7 +365,6 @@ func has_five_in_a_row(line: Array, stone_type: StoneType) -> bool:
 			return true
 	return false
 
-@rpc("any_peer", "call_local", "reliable")
 func set_peers_stone_types(stone_type: StoneType) -> void:
 	if multiplayer.get_remote_sender_id() == 1:
 		servers_stone = stone_type
@@ -392,17 +411,17 @@ func increment_game_state() -> void:
 	if game_state == GameState.CHOOSE:
 		choose_move_finished.emit()
 		empty_stone_type_in_stone_grid(StoneType.FIFTH)
+		stones_on_the_grid = 5
 	
 	game_state = min(int(game_state) + 1, max_game_state) as GameState
 	
 	if game_state == GameState.CHOOSE && initial_fifth_moves_count == 1:
 		increment_game_state()
 
-@rpc("any_peer", "call_local", "reliable")
 func switch_whose_turn_it_is() -> void:
-	is_servers_turn = !is_servers_turn
+	if game_outcome == GameOutcome.UNDECIDED:
+		is_servers_turn = !is_servers_turn
 
-@rpc("any_peer", "call_local", "reliable")
 func set_fifth_moves_count(move_count: int) -> void:
 	initial_fifth_moves_count = move_count
 	fifth_moves_count = initial_fifth_moves_count

@@ -7,6 +7,14 @@
 [ext_resource type="PackedScene" uid="uid://u3jknkuif0jp" path="res://scenes/network_manager/network_manager.tscn" id="5_ryrav"]
 [ext_resource type="PackedScene" uid="uid://dyv0wg4wkt33e" path="res://scenes/menus/pause_menu/pause_menu.tscn" id="6_eow3j"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ryrav"]
+bg_color = Color(0.093160845, 0.093160845, 0.0931608, 1)
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_ryrav"]
+properties/0/path = NodePath("PausePanel:visible")
+properties/0/spawn = false
+properties/0/replication_mode = 2
+
 [node name="Game" type="Node" unique_id=554959532]
 script = ExtResource("1_feb5d")
 
@@ -41,5 +49,24 @@ wait_time = 600.0
 one_shot = true
 autostart = true
 
+[node name="PausePanel" type="PanelContainer" parent="." unique_id=2064112877]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ryrav")
+
+[node name="Label" type="Label" parent="PausePanel" unique_id=673219585]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "GAME IS PAUSED"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="PauseMenu" parent="." unique_id=396420241 instance=ExtResource("6_eow3j")]
 visible = false
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=105519696]
+replication_config = SubResource("SceneReplicationConfig_ryrav")

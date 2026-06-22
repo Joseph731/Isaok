@@ -3,21 +3,27 @@ class_name UIManager
 
 signal stone_selection_prompt_created(stone_selection_prompt: StoneSelectionPrompt)
 signal fifth_moves_count_prompt_created(fifth_moves_count_prompt: FifthMovesCountPrompt)
+signal game_over_prompt_created(game_over_prompt: GameOverPrompt)
+signal pause_request_prompt_created(pause_request_prompt: PauseRequestPrompt)
 
 @export var grid_manager: GridManager
 @export var turn_timer_host: Timer
 @export var turn_timer_challenger: Timer
 
-
 @onready var stones: Node = $Stones
 @onready var center_label: Label = $MarginContainer/CenterLabel
 @onready var prompt_spawner: MultiplayerSpawner = $PromptSpawner
+@onready var pause_request_prompt_spawner: MultiplayerSpawner = $PauseRequestPromptSpawner
 @onready var turn_timer_label: Label = $MarginContainer/TurnTimerLabel
 @onready var whose_turn_label: Label = $MarginContainer/WhoseTurnLabel
+@onready var pass_button: Button = $PassButton
+@onready var pause_request_prompts: CanvasLayer = $PauseRequestPrompts
 
 const STONE: PackedScene = preload("uid://dyrih8v8f0hie")
 const STONE_SELECTION_PROMPT: PackedScene = preload("uid://dly5k3xygv7tn")
 const FIFTH_MOVES_COUNT_PROMPT: PackedScene = preload("uid://cghnoly1psgtq")
+const GAME_OVER_PROMPT: PackedScene = preload("uid://cadoonsqj6px8")
+const PAUSE_REQUEST_PROMPT: PackedScene = preload("uid://1gtjdwujhlyb")
 
 var newest_stone: Stone
 var fifth_stones: Array[Stone]
@@ -25,6 +31,7 @@ var banned_stones: Array[Stone]
 
 func _ready() -> void:
 	prompt_spawner.spawned.connect(_on_prompt_spawned)
+	pause_request_prompt_spawner.spawned.connect(_on_pause_request_prompt_spawned)
 	grid_manager.stone_placed.connect(_on_stone_placed)
 	grid_manager.turn_switched.connect(_on_turn_switched)
 	grid_manager.second_move_finished.connect(_on_second_move_finished)
@@ -32,6 +39,7 @@ func _ready() -> void:
 	grid_manager.fourth_move_finished.connect(_on_fourth_move_finished)
 	grid_manager.fifth_move_finished.connect(_on_fifth_move_finished)
 	grid_manager.choose_move_finished.connect(_on_choose_move_finished)
+	grid_manager.game_outcome_decided.connect(_on_game_outcome_decided)
 	if is_multiplayer_authority():
 		create_stone_selection_prompt(true)
 
@@ -96,11 +104,10 @@ func _on_third_move_finished() -> void:
 	else:
 		create_stone_selection_prompt(false)
 
-@rpc("any_peer", "call_local", "reliable")
 func create_stone_selection_prompt(is_for_server: bool) -> void:
 	var stone_selection_prompt: StoneSelectionPrompt = STONE_SELECTION_PROMPT.instantiate()
-	stone_selection_prompt_created.emit.call_deferred(stone_selection_prompt)
 	add_child(stone_selection_prompt)
+	stone_selection_prompt_created.emit.call_deferred(stone_selection_prompt)
 	stone_selection_prompt.is_for_server = is_for_server
 
 func _on_fourth_move_finished() -> void:
@@ -111,18 +118,20 @@ func _on_fourth_move_finished() -> void:
 
 func create_fifth_moves_count_prompt(is_for_server: bool) -> void:
 	var fifth_moves_count_prompt: FifthMovesCountPrompt = FIFTH_MOVES_COUNT_PROMPT.instantiate()
+	add_child(fifth_moves_count_prompt)
 	fifth_moves_count_prompt_created.emit(fifth_moves_count_prompt)
 	fifth_moves_count_prompt.fifth_moves_count_selected.connect(_on_fifth_moves_count_selected)
-	add_child(fifth_moves_count_prompt)
 	fifth_moves_count_prompt.is_for_server = is_for_server
 
 func _on_fifth_moves_count_selected(moves_count: int, _fifth_moves_count_prompt: FifthMovesCountPrompt) -> void:
-	set_fifth_moves_count_text.rpc_id(1, moves_count)
-	create_stone_selection_prompt.rpc_id(1, !multiplayer.is_server())
+	handle_fifth_moves_count_selected.rpc_id(1, moves_count)
 
 @rpc("any_peer", "call_local", "reliable")
+func handle_fifth_moves_count_selected(moves_count: int) -> void:
+	set_fifth_moves_count_text(moves_count)
+	create_stone_selection_prompt(!multiplayer.is_server())
+
 func set_fifth_moves_count_text(moves_count: int) -> void:
-	center_label.visible = true
 	center_label.text = "There will be " + str(moves_count) + " fifth moves"
 
 func _on_fifth_move_finished() -> void:
@@ -136,6 +145,7 @@ func _on_choose_move_finished() -> void:
 		fifth_stone.queue_free()
 	fifth_stones.clear()
 	center_label.text = ""
+	pass_button.visible = true
 
 func _on_prompt_spawned(prompt: Node) -> void:
 	if multiplayer.is_server():
@@ -145,9 +155,56 @@ func _on_prompt_spawned(prompt: Node) -> void:
 	if prompt is FifthMovesCountPrompt:
 		fifth_moves_count_prompt_created.emit(prompt)
 		prompt.fifth_moves_count_selected.connect(_on_fifth_moves_count_selected)
+	if prompt is GameOverPrompt:
+		game_over_prompt_created.emit(prompt)
+
+func _on_pause_request_prompt_spawned(pause_request_prompt: Node) -> void:
+	pause_request_prompt_created.emit(pause_request_prompt)
 
 func _on_turn_switched(is_servers_turn: bool) -> void:
 		if (is_servers_turn && grid_manager.servers_stone == GridManager.StoneType.WHITE) || (!is_servers_turn && grid_manager.clients_stone == GridManager.StoneType.WHITE):
 			whose_turn_label.text = "White's turn"
 		else:
 			whose_turn_label.text = "Black's turn"
+
+func _on_game_outcome_decided(game_outcome: GridManager.GameOutcome) -> void:
+	match game_outcome:
+		GridManager.GameOutcome.BLACK_WIN:
+			center_label.text = "Black Wins!"
+			if grid_manager.servers_stone == grid_manager.StoneType.BLACK:
+				create_game_over_prompt(true, "Victory")
+				create_game_over_prompt(false, "Defeat")
+			else:
+				create_game_over_prompt(true, "Defeat")
+				create_game_over_prompt(false, "Victory")
+		GridManager.GameOutcome.WHITE_WIN:
+			center_label.text = "White Wins!"
+			if grid_manager.servers_stone == grid_manager.StoneType.WHITE:
+				create_game_over_prompt(true, "Victory")
+				create_game_over_prompt(false, "Defeat")
+			else:
+				create_game_over_prompt(true, "Defeat")
+				create_game_over_prompt(false, "Victory")
+		GridManager.GameOutcome.DRAW:
+			center_label.text = "Draw!"
+			create_game_over_prompt(true, "Tie")
+			create_game_over_prompt(false, "Tie")
+			
+	whose_turn_label.text = ""
+	turn_timer_label.text = ""
+	pass_button.visible = false
+
+func create_game_over_prompt(is_for_server: bool, label_text: String) -> void:
+	var game_over_prompt: GameOverPrompt = GAME_OVER_PROMPT.instantiate()
+	add_child(game_over_prompt, true)
+	game_over_prompt_created.emit(game_over_prompt)
+	game_over_prompt.is_for_server = is_for_server
+	game_over_prompt.label.text = label_text
+
+func create_pause_request_prompt(is_for_server: bool) -> void:
+	if pause_request_prompts.get_child_count() > 0:
+		return
+	var pause_request_prompt: PauseRequestPrompt = PAUSE_REQUEST_PROMPT.instantiate()
+	pause_request_prompts.add_child(pause_request_prompt)
+	pause_request_prompt_created.emit(pause_request_prompt)
+	pause_request_prompt.is_for_server = is_for_server

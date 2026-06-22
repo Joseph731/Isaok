@@ -6,6 +6,8 @@ signal quit_requested
 @onready var resume_button: Button = %ResumeButton
 @onready var quit_button: Button = %QuitButton
 @onready var options_button: Button = %OptionsButton
+@onready var pause_button: Button = $MarginContainer/VBoxContainer/PauseButton
+@onready var rematch_button: Button = $MarginContainer/VBoxContainer/RematchButton
 
 
 var options_menu_scene: PackedScene = preload("uid://ckqrgh0lepopt")
@@ -18,7 +20,9 @@ func _ready():
 	UIAudioManager.register_buttons([
 		resume_button,
 		quit_button,
-		options_button
+		options_button,
+		pause_button,
+		rematch_button
 	])
 
 

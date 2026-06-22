@@ -12,7 +12,7 @@ properties/1/replication_mode = 2
 properties/2/path = NodePath("MarginContainer/CenterLabel:text")
 properties/2/spawn = false
 properties/2/replication_mode = 2
-properties/3/path = NodePath("MarginContainer/CenterLabel:visible")
+properties/3/path = NodePath("PassButton:visible")
 properties/3/spawn = false
 properties/3/replication_mode = 2
 
@@ -26,8 +26,15 @@ _spawnable_scenes = PackedStringArray("uid://dyrih8v8f0hie")
 spawn_path = NodePath("../Stones")
 
 [node name="PromptSpawner" type="MultiplayerSpawner" parent="." unique_id=206647261]
-_spawnable_scenes = PackedStringArray("uid://dly5k3xygv7tn", "uid://cghnoly1psgtq")
+_spawnable_scenes = PackedStringArray("uid://dly5k3xygv7tn", "uid://cghnoly1psgtq", "uid://cadoonsqj6px8")
 spawn_path = NodePath("..")
+
+[node name="PauseRequestPromptSpawner" type="MultiplayerSpawner" parent="." unique_id=1879992484]
+_spawnable_scenes = PackedStringArray("uid://1gtjdwujhlyb")
+spawn_path = NodePath("../PauseRequestPrompts")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1775470674]
+replication_config = SubResource("SceneReplicationConfig_nobtw")
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=864560291]
 anchors_preset = 12
@@ -64,5 +71,17 @@ text = "10:00"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1775470674]
-replication_config = SubResource("SceneReplicationConfig_nobtw")
+[node name="PassButton" type="Button" parent="." unique_id=1308506890]
+visible = false
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 70.0
+offset_top = -24.0
+offset_right = 125.0
+offset_bottom = -2.0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 10
+text = "Pass Turn"
+
+[node name="PauseRequestPrompts" type="CanvasLayer" parent="." unique_id=806600748]

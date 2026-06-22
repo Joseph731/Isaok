@@ -1,0 +1,61 @@
+[gd_scene format=3 uid="uid://1gtjdwujhlyb"]
+
+[ext_resource type="Script" uid="uid://b3182ddriyvw7" path="res://scenes/ui/pause_request_prompt/pause_request_prompt.gd" id="1_sorrk"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_ob5ct"]
+properties/0/path = NodePath(".:is_for_server")
+properties/0/spawn = false
+properties/0/replication_mode = 2
+properties/1/path = NodePath("PanelContainer/VBoxContainer/Label:text")
+properties/1/spawn = false
+properties/1/replication_mode = 2
+
+[node name="PauseRequestPrompt" type="Control" unique_id=192762231]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_sorrk")
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=918880305]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -63.5
+offset_top = -29.0
+offset_right = 63.5
+offset_bottom = 29.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer" unique_id=1665801978]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer" unique_id=1911931151]
+layout_mode = 2
+text = "Allow Pause?"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=1041768961]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="YesButton" type="Button" parent="PanelContainer/VBoxContainer/HBoxContainer" unique_id=94468563]
+layout_mode = 2
+text = "Yes"
+
+[node name="NoButton" type="Button" parent="PanelContainer/VBoxContainer/HBoxContainer" unique_id=497194117]
+custom_minimum_size = Vector2(35, 0)
+layout_mode = 2
+text = "No"
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1568377184]
+replication_config = SubResource("SceneReplicationConfig_ob5ct")

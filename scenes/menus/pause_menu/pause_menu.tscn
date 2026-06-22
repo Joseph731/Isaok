@@ -3,6 +3,14 @@
 [ext_resource type="Script" uid="uid://de6gxs50lq4w0" path="res://scenes/menus/pause_menu/pause_menu.gd" id="1_jbgdu"]
 [ext_resource type="PackedScene" uid="uid://ccdmiiqfx77gb" path="res://scenes/background/background.tscn" id="1_mnjdh"]
 
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_fgv3k"]
+properties/0/path = NodePath("MarginContainer/VBoxContainer/RematchButton:visible")
+properties/0/spawn = false
+properties/0/replication_mode = 2
+properties/1/path = NodePath("MarginContainer/VBoxContainer/PauseButton:text")
+properties/1/spawn = false
+properties/1/replication_mode = 2
+
 [node name="PauseMenu" type="CanvasLayer" unique_id=396420241]
 process_mode = 3
 layer = 2
@@ -24,22 +32,29 @@ size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_constants/separation = 8
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer" unique_id=652404317]
-layout_mode = 2
-text = "PAUSED"
-horizontal_alignment = 1
-
 [node name="ResumeButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1366816767]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Resume"
+
+[node name="PauseButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1822951499]
+layout_mode = 2
+text = "Request Pause"
 
 [node name="OptionsButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=288552442]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Options"
 
+[node name="RematchButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1260254788]
+visible = false
+layout_mode = 2
+text = "Rematch"
+
 [node name="QuitButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1543952482]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Quit to Menu"
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1012625708]
+replication_config = SubResource("SceneReplicationConfig_fgv3k")
