@@ -16,6 +16,8 @@ func _ready():
 	resume_button.pressed.connect(_on_resume_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
 	options_button.pressed.connect(_on_options_pressed)
+	pause_button.pressed.connect(_on_pause_button_pressed)
+	rematch_button.pressed.connect(_on_rematch_button_pressed)
 	
 	UIAudioManager.register_buttons([
 		resume_button,
@@ -31,15 +33,21 @@ func _input(event: InputEvent) -> void:
 		pause()
 		get_viewport().set_input_as_handled()
 
-func pause():
+func pause() -> void:
 	visible = !visible
 
-func _on_resume_pressed():
+func _on_resume_pressed() -> void:
 	visible = false
 
-func _on_quit_pressed():
+func _on_quit_pressed() -> void:
 	quit_requested.emit()
 
-func _on_options_pressed():
+func _on_options_pressed() -> void:
 	var options_menu := options_menu_scene.instantiate()
 	add_child(options_menu)
+
+func _on_pause_button_pressed() -> void:
+	visible = false
+
+func _on_rematch_button_pressed() -> void:
+	visible = false
