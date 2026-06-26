@@ -16,19 +16,34 @@ layout_mode = 2
 
 [node name="Background" parent="Control" unique_id=2099421624 instance=ExtResource("2_flk2s")]
 
+[node name="Label" type="Label" parent="." unique_id=1341322379]
+custom_minimum_size = Vector2(0, 190)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_constants/shadow_outline_size = 6
+theme_override_font_sizes/font_size = 64
+text = "ISAOK"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=113972469]
 custom_minimum_size = Vector2(132, 0)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 
-[node name="SinglePlayerButton" type="Button" parent="VBoxContainer" unique_id=1872579560]
-layout_mode = 2
-text = "Deck Selection"
-
 [node name="MultiplayerButton" type="Button" parent="VBoxContainer" unique_id=1734522003]
 layout_mode = 2
 text = "Multiplayer"
+
+[node name="SinglePlayerButton" type="Button" parent="VBoxContainer" unique_id=1872579560]
+layout_mode = 2
+text = "How to Play"
 
 [node name="OptionsButton" type="Button" parent="VBoxContainer" unique_id=722576434]
 layout_mode = 2

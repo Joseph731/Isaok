@@ -15,5 +15,5 @@ script = ExtResource("1_knglf")
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=382271617]
 stream = SubResource("AudioStreamRandomizer_h7f35")
-volume_db = -2.0
+volume_db = -12.0
 bus = &"sfx"

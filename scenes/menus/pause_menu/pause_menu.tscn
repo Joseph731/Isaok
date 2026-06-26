@@ -10,6 +10,15 @@ properties/0/replication_mode = 2
 properties/1/path = NodePath("MarginContainer/VBoxContainer/PauseButton:text")
 properties/1/spawn = false
 properties/1/replication_mode = 2
+properties/2/path = NodePath("MarginContainer/VBoxContainer2/HostWinsLabel:text")
+properties/2/spawn = false
+properties/2/replication_mode = 2
+properties/3/path = NodePath("MarginContainer/VBoxContainer2/HostLosesLabel:text")
+properties/3/spawn = false
+properties/3/replication_mode = 2
+properties/4/path = NodePath("MarginContainer/VBoxContainer2/HostTiesLabel:text")
+properties/4/spawn = false
+properties/4/replication_mode = 2
 
 [node name="PauseMenu" type="CanvasLayer" unique_id=396420241]
 process_mode = 3
@@ -24,6 +33,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_bottom = 10
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1912965115]
 custom_minimum_size = Vector2(128, 0)
@@ -55,6 +66,44 @@ text = "Rematch"
 unique_name_in_owner = true
 layout_mode = 2
 text = "Quit to Menu"
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="MarginContainer" unique_id=824637445]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+alignment = 1
+
+[node name="HostStatsLabel" type="Label" parent="MarginContainer/VBoxContainer2" unique_id=1297486918]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
+text = "Host Stats:"
+
+[node name="HostWinsLabel" type="Label" parent="MarginContainer/VBoxContainer2" unique_id=875507041]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
+text = "Wins: 0"
+
+[node name="HostLosesLabel" type="Label" parent="MarginContainer/VBoxContainer2" unique_id=814081921]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
+text = "Loses: 0"
+
+[node name="HostTiesLabel" type="Label" parent="MarginContainer/VBoxContainer2" unique_id=533634233]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 20
+text = "Ties: 0"
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1012625708]
 replication_config = SubResource("SceneReplicationConfig_fgv3k")

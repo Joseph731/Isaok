@@ -1,6 +1,8 @@
 [gd_scene format=3 uid="uid://d2143siylaabu"]
 
 [ext_resource type="Script" uid="uid://dndo1swfxcu1b" path="res://scenes/grid_manager/grid_manager.gd" id="1_hwchf"]
+[ext_resource type="AudioStream" uid="uid://betemvt6n74xt" path="res://assets/audio/first_snap.wav" id="2_trxle"]
+[ext_resource type="AudioStream" uid="uid://ddrig61u8baht" path="res://assets/audio/rejected_move.wav" id="3_j1sgo"]
 
 [node name="GridManager" type="Control" unique_id=988794904]
 layout_mode = 3
@@ -12,3 +14,11 @@ layout_mode = 0
 theme_override_constants/h_separation = 13
 theme_override_constants/v_separation = 13
 columns = 15
+
+[node name="SwapStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=81234705]
+stream = ExtResource("2_trxle")
+bus = &"sfx"
+
+[node name="RejectedPlayer" type="AudioStreamPlayer" parent="." unique_id=1728175304]
+stream = ExtResource("3_j1sgo")
+bus = &"sfx"

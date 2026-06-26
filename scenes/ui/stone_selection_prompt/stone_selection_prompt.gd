@@ -17,6 +17,11 @@ var is_for_server: bool:
 func _ready() -> void:
 	black_button.pressed.connect(_on_black_button_pressed)
 	white_button.pressed.connect(_on_white_button_pressed)
+	
+	UIAudioManager.register_buttons([
+		black_button,
+		white_button
+	])
 
 func _on_black_button_pressed() -> void:
 	stone_selected.emit(GridManager.StoneType.BLACK, self)

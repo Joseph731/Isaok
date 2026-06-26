@@ -65,11 +65,11 @@ func validate():
 	MultiplayerConfig.display_name = display_name_text_edit.text
 	
 	var is_valid_port := MultiplayerConfig.port > 0
-	var is_valid_name := !MultiplayerConfig.display_name.is_empty()
+	#var is_valid_name := !MultiplayerConfig.display_name.is_empty()
 	var is_valid_ip := !MultiplayerConfig.ip_address.is_empty()
 
-	host_button.disabled = is_connecting || !is_valid_port || !is_valid_name
-	join_button.disabled = is_connecting || !is_valid_port || !is_valid_name || !is_valid_ip
+	host_button.disabled = is_connecting || !is_valid_port
+	join_button.disabled = is_connecting || !is_valid_port || !is_valid_ip
 
 
 func show_error(is_client: bool):

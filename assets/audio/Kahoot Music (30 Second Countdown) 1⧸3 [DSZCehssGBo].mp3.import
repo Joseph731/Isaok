@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://d2nyr17by2e02"
+path="res://.godot/imported/Kahoot Music (30 Second Countdown) 1⧸3 [DSZCehssGBo].mp3-62aa2675d8b116af3eb96ad03e53ab44.mp3str"
+
+[deps]
+
+source_file="res://assets/audio/Kahoot Music (30 Second Countdown) 1⧸3 [DSZCehssGBo].mp3"
+dest_files=["res://.godot/imported/Kahoot Music (30 Second Countdown) 1⧸3 [DSZCehssGBo].mp3-62aa2675d8b116af3eb96ad03e53ab44.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

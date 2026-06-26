@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://hxc47txegwms"]
+
+[ext_resource type="AudioStream" uid="uid://3xefjdj83tsf" path="res://assets/audio/Greed [_cuHj6vijzA].mp3" id="1_ouhko"]
+[ext_resource type="Script" uid="uid://133ijpns6kt3" path="res://autoload/music_player.gd" id="2_5pgb1"]
+
+[node name="MusicPlayer" type="AudioStreamPlayer" unique_id=2002219994]
+stream = ExtResource("1_ouhko")
+volume_db = -9.0
+bus = &"music"
+script = ExtResource("2_5pgb1")

@@ -6,6 +6,8 @@
 [ext_resource type="PackedScene" uid="uid://ddk13jk34n10n" path="res://scenes/ui_manager/ui_manager.tscn" id="4_fc0e3"]
 [ext_resource type="PackedScene" uid="uid://u3jknkuif0jp" path="res://scenes/network_manager/network_manager.tscn" id="5_ryrav"]
 [ext_resource type="PackedScene" uid="uid://dyv0wg4wkt33e" path="res://scenes/menus/pause_menu/pause_menu.tscn" id="6_eow3j"]
+[ext_resource type="AudioStream" uid="uid://c1hdr573kx45b" path="res://assets/audio/garrosh_must_choose.wav" id="7_j5wjh"]
+[ext_resource type="AudioStream" uid="uid://bsywshvdytedc" path="res://assets/audio/stone_plop.wav" id="8_vef74"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ryrav"]
 bg_color = Color(0.093160845, 0.093160845, 0.0931608, 1)
@@ -40,12 +42,12 @@ turn_timer_challenger = NodePath("../TurnTimerChallenger")
 [node name="NetworkManager" parent="." unique_id=57909923 instance=ExtResource("5_ryrav")]
 
 [node name="TurnTimerHost" type="Timer" parent="." unique_id=1659935680]
-wait_time = 600.0
+wait_time = 40.0
 one_shot = true
 autostart = true
 
 [node name="TurnTimerChallenger" type="Timer" parent="." unique_id=1751517430]
-wait_time = 600.0
+wait_time = 40.0
 one_shot = true
 autostart = true
 
@@ -70,3 +72,11 @@ visible = false
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=105519696]
 replication_config = SubResource("SceneReplicationConfig_ryrav")
+
+[node name="GarroshPlayer" type="AudioStreamPlayer" parent="." unique_id=1585523628]
+stream = ExtResource("7_j5wjh")
+bus = &"sfx"
+
+[node name="StonePlopPlayer" type="AudioStreamPlayer" parent="." unique_id=1690021302]
+stream = ExtResource("8_vef74")
+bus = &"sfx"

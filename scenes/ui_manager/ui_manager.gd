@@ -41,7 +41,7 @@ func _ready() -> void:
 	grid_manager.choose_move_finished.connect(_on_choose_move_finished)
 	grid_manager.game_outcome_decided.connect(_on_game_outcome_decided)
 	if is_multiplayer_authority():
-		create_stone_selection_prompt(true)
+		create_stone_selection_prompt(!HostStats.host_just_won)
 
 func _process(_delta: float) -> void:
 	if is_multiplayer_authority():
@@ -129,7 +129,7 @@ func _on_fifth_moves_count_selected(moves_count: int, _fifth_moves_count_prompt:
 @rpc("any_peer", "call_local", "reliable")
 func handle_fifth_moves_count_selected(moves_count: int) -> void:
 	set_fifth_moves_count_text(moves_count)
-	create_stone_selection_prompt(!multiplayer.is_server())
+	create_stone_selection_prompt(!(multiplayer.get_remote_sender_id() == 1))
 
 func set_fifth_moves_count_text(moves_count: int) -> void:
 	center_label.text = "There will be " + str(moves_count) + " fifth moves"
@@ -172,34 +172,35 @@ func _on_game_outcome_decided(game_outcome: GridManager.GameOutcome) -> void:
 		GridManager.GameOutcome.BLACK_WIN:
 			center_label.text = "Black Wins!"
 			if grid_manager.servers_stone == grid_manager.StoneType.BLACK:
-				create_game_over_prompt(true, "Victory")
-				create_game_over_prompt(false, "Defeat")
+				create_game_over_prompt(true, true, GameOverPrompt.GameOverOutcome.VICTORY)
+				create_game_over_prompt(false, false, GameOverPrompt.GameOverOutcome.DEFEAT)
 			else:
-				create_game_over_prompt(true, "Defeat")
-				create_game_over_prompt(false, "Victory")
+				create_game_over_prompt(true, false, GameOverPrompt.GameOverOutcome.DEFEAT)
+				create_game_over_prompt(false, true, GameOverPrompt.GameOverOutcome.VICTORY)
 		GridManager.GameOutcome.WHITE_WIN:
 			center_label.text = "White Wins!"
 			if grid_manager.servers_stone == grid_manager.StoneType.WHITE:
-				create_game_over_prompt(true, "Victory")
-				create_game_over_prompt(false, "Defeat")
+				create_game_over_prompt(true, false, GameOverPrompt.GameOverOutcome.VICTORY)
+				create_game_over_prompt(false, true, GameOverPrompt.GameOverOutcome.DEFEAT)
 			else:
-				create_game_over_prompt(true, "Defeat")
-				create_game_over_prompt(false, "Victory")
+				create_game_over_prompt(true, true, GameOverPrompt.GameOverOutcome.DEFEAT)
+				create_game_over_prompt(false, false, GameOverPrompt.GameOverOutcome.VICTORY)
 		GridManager.GameOutcome.DRAW:
 			center_label.text = "Draw!"
-			create_game_over_prompt(true, "Tie")
-			create_game_over_prompt(false, "Tie")
+			create_game_over_prompt(true, false, GameOverPrompt.GameOverOutcome.TIE)
+			create_game_over_prompt(false, false, GameOverPrompt.GameOverOutcome.TIE)
 			
 	whose_turn_label.text = ""
 	turn_timer_label.text = ""
 	pass_button.visible = false
 
-func create_game_over_prompt(is_for_server: bool, label_text: String) -> void:
+func create_game_over_prompt(is_for_server: bool, is_black_version: bool, outcome_version: GameOverPrompt.GameOverOutcome) -> void:
 	var game_over_prompt: GameOverPrompt = GAME_OVER_PROMPT.instantiate()
 	add_child(game_over_prompt, true)
 	game_over_prompt_created.emit(game_over_prompt)
 	game_over_prompt.is_for_server = is_for_server
-	game_over_prompt.label.text = label_text
+	game_over_prompt.is_black_version = is_black_version
+	game_over_prompt.outcome_version = outcome_version
 
 func create_pause_request_prompt(is_for_server: bool) -> void:
 	if pause_request_prompts.get_child_count() > 0:

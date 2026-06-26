@@ -29,6 +29,17 @@ func _ready() -> void:
 	six_button.pressed.connect(_on_six_button_pressed)
 	seven_button.pressed.connect(_on_seven_button_pressed)
 	eight_button.pressed.connect(_on_eight_button_pressed)
+	
+	UIAudioManager.register_buttons([
+		one_button,
+		two_button,
+		three_button,
+		four_button,
+		five_button,
+		six_button,
+		seven_button,
+		eight_button
+	])
 
 func _on_one_button_pressed() -> void:
 	fifth_moves_count_selected.emit(1, self)

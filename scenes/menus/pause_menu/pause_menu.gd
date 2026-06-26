@@ -8,6 +8,9 @@ signal quit_requested
 @onready var options_button: Button = %OptionsButton
 @onready var pause_button: Button = $MarginContainer/VBoxContainer/PauseButton
 @onready var rematch_button: Button = $MarginContainer/VBoxContainer/RematchButton
+@onready var host_wins_label: Label = $MarginContainer/VBoxContainer2/HostWinsLabel
+@onready var host_loses_label: Label = $MarginContainer/VBoxContainer2/HostLosesLabel
+@onready var host_ties_label: Label = $MarginContainer/VBoxContainer2/HostTiesLabel
 
 
 var options_menu_scene: PackedScene = preload("uid://ckqrgh0lepopt")
@@ -51,3 +54,8 @@ func _on_pause_button_pressed() -> void:
 
 func _on_rematch_button_pressed() -> void:
 	visible = false
+
+func update_host_stats_labels() -> void:
+	host_wins_label.text = "Wins: " + str(HostStats.host_wins)
+	host_loses_label.text = "Loses: " + str(HostStats.host_loses)
+	host_ties_label.text = "Ties: " + str(HostStats.host_ties)

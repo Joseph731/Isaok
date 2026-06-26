@@ -17,7 +17,11 @@ signal game_outcome_decided(game_outcome: GameOutcome)
 @export var position_marker: Marker2D
 @export var center_cell_marker: Marker2D
 
+const SECOND_SNAP = preload("uid://d0bpipi6pja87")
+
 @onready var grid_container: GridContainer = $GridContainer
+@onready var swap_stream_player: AudioStreamPlayer = $SwapStreamPlayer
+@onready var rejected_player: AudioStreamPlayer = $RejectedPlayer
 
 # Grid configuration
 const GRID_SIZE: int = 15
@@ -38,6 +42,7 @@ var lone_fifth_move_coords: Vector2i
 var fifth_moves_count: int = 0
 var grid_symmetry_data: Dictionary
 var stones_on_the_grid: int = 0
+var have_swapped_before: bool = false
 
 var _game_outcome: GameOutcome = GameOutcome.UNDECIDED
 var game_outcome: GameOutcome:
@@ -113,13 +118,27 @@ func _on_cell_clicked(coords: Vector2i, cell_node: Button) -> void:
 
 @rpc("any_peer", "call_local", "reliable")
 func place_stone(coords: Vector2i, cell_node_path: String) -> void:
+	if multiplayer.get_remote_sender_id() == 1:
+		if !is_servers_turn:
+			return
+	else:
+		if is_servers_turn:
+			return
 	if game_outcome != GameOutcome.UNDECIDED:
 		return
 	#check if coords is in 3x3 in center of board
 	if game_state == GameState.SECOND && !coords_in_area(coords, Vector2i(6,6), 3):
+		if multiplayer.get_remote_sender_id() == 1:
+			play_rejected_sound.rpc_id(1)
+		elif multiplayer.get_peers().size() > 0:
+			play_rejected_sound.rpc_id(multiplayer.get_peers()[0])
 		return
 	#check if coords is in 5x5 in center of board
 	if game_state == GameState.THIRD && !coords_in_area(coords, Vector2i(5,5), 5):
+		if multiplayer.get_remote_sender_id() == 1:
+			play_rejected_sound.rpc_id(1)
+		elif multiplayer.get_peers().size() > 0:
+			play_rejected_sound.rpc_id(multiplayer.get_peers()[0])
 		return
 	
 	var stone_grid_pos: Vector2i
@@ -141,17 +160,14 @@ func place_stone(coords: Vector2i, cell_node_path: String) -> void:
 	elif game_state == GameState.CHOOSE:
 		stone_type = StoneType.BLACK
 	
-	if multiplayer.get_remote_sender_id() == 1:
-		if !is_servers_turn:
-			return
-	else:
-		if is_servers_turn:
-			return
-	
 	var change_turns: bool = true
 	if game_state == GameState.CHOOSE:
 		change_turns = false
 		if stone_grid[coords.y][coords.x] != StoneType.FIFTH:
+			if multiplayer.get_remote_sender_id() == 1:
+				play_rejected_sound.rpc_id(1)
+			elif multiplayer.get_peers().size() > 0:
+				play_rejected_sound.rpc_id(multiplayer.get_peers()[0])
 			return
 	else:
 		if stone_grid[coords.y][coords.x] != StoneType.EMPTY:
@@ -205,12 +221,26 @@ func place_stone(coords: Vector2i, cell_node_path: String) -> void:
 			print("Move rejected: Violates the Three-and-Three rule!")
 			stone_grid[coords.y][coords.x] = StoneType.EMPTY # Undo the move
 			stones_on_the_grid -= 1
+			
+			if multiplayer.get_remote_sender_id() == 1:
+				play_rejected_sound.rpc_id(1)
+			elif multiplayer.get_peers().size() > 0:
+				play_rejected_sound.rpc_id(multiplayer.get_peers()[0])
+			
 			return
+		
 		if violates_four_and_four(stone_grid_pos, stone_type):
 			print("Move rejected: Violates the Four-and-Four rule!")
 			stone_grid[coords.y][coords.x] = StoneType.EMPTY # Undo the move
 			stones_on_the_grid -= 1
+			
+			if multiplayer.get_remote_sender_id() == 1:
+				play_rejected_sound.rpc_id(1)
+			elif multiplayer.get_peers().size() > 0:
+				play_rejected_sound.rpc_id(multiplayer.get_peers()[0])
+			
 			return
+	
 	if game_outcome == GameOutcome.UNDECIDED && stones_on_the_grid == GRID_SIZE * GRID_SIZE:
 		print("Draw!")
 		game_outcome = GameOutcome.DRAW
@@ -226,6 +256,10 @@ func place_stone(coords: Vector2i, cell_node_path: String) -> void:
 		change_turns = game_state != GameState.THIRD && game_state != GameState.FIFTH
 	if change_turns:
 		switch_whose_turn_it_is()
+
+@rpc("authority", "call_local", "unreliable")
+func play_rejected_sound() -> void:
+	rejected_player.play()
 
 func coords_in_area(coords: Vector2i, starting_pos: Vector2i, area_width_height: int) -> bool:
 	for y in range(starting_pos.y, starting_pos.y + area_width_height):
@@ -365,19 +399,18 @@ func has_five_in_a_row(line: Array, stone_type: StoneType) -> bool:
 			return true
 	return false
 
-func set_peers_stone_types(stone_type: StoneType) -> void:
-	if multiplayer.get_remote_sender_id() == 1:
-		servers_stone = stone_type
-		if servers_stone == StoneType.BLACK:
-			clients_stone = StoneType.WHITE
-		else:
-			clients_stone = StoneType.BLACK
+func set_servers_stone_type(stone_type: StoneType) -> void:
+	if game_state != GameState.SECOND && servers_stone != stone_type:
+		if have_swapped_before:
+			swap_stream_player_to_oh_snap.rpc()
+		play_swap_stream_player.rpc()
+		have_swapped_before = true
+		
+	servers_stone = stone_type
+	if servers_stone == StoneType.BLACK:
+		clients_stone = StoneType.WHITE
 	else:
-		clients_stone = stone_type
-		if clients_stone == StoneType.BLACK:
-			servers_stone = StoneType.WHITE
-		else:
-			servers_stone = StoneType.BLACK
+		clients_stone = StoneType.BLACK
 	
 	if game_state == GameState.SECOND:
 		is_servers_turn = servers_stone == StoneType.BLACK
@@ -385,6 +418,14 @@ func set_peers_stone_types(stone_type: StoneType) -> void:
 		is_servers_turn = servers_stone == StoneType.WHITE
 	if game_state == GameState.FIFTH:
 		is_servers_turn = servers_stone == StoneType.BLACK
+
+@rpc("authority", "call_local", "unreliable")
+func swap_stream_player_to_oh_snap() -> void:
+	swap_stream_player.stream = SECOND_SNAP
+
+@rpc("authority", "call_local", "unreliable")
+func play_swap_stream_player() -> void:
+	swap_stream_player.play()
 
 func increment_game_state() -> void:
 	# Get the maximum valid integer index (size - 1)

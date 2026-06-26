@@ -1,5 +1,7 @@
 extends Control
 
+const GREED_MUSIC = preload("uid://3xefjdj83tsf")
+
 @onready var single_player_button: Button = $VBoxContainer/SinglePlayerButton
 @onready var multiplayer_button: Button = $VBoxContainer/MultiplayerButton
 @onready var quit_button: Button = $VBoxContainer/QuitButton
@@ -9,8 +11,12 @@ extends Control
 
 var options_menu_scene: PackedScene = preload("uid://ckqrgh0lepopt")
 
-
 func _ready() -> void:
+	if MusicPlayer.stream != GREED_MUSIC:
+		MusicPlayer.stream = GREED_MUSIC
+	if !MusicPlayer.playing:
+		MusicPlayer.play()
+	
 	single_player_button.pressed.connect(_on_single_player_button_pressed)
 	multiplayer_button.pressed.connect(_on_multiplayer_button_pressed)
 	quit_button.pressed.connect(_on_quit_button_pressed)

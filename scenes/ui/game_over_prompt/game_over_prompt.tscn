@@ -6,9 +6,12 @@
 properties/0/path = NodePath(".:is_for_server")
 properties/0/spawn = false
 properties/0/replication_mode = 2
-properties/1/path = NodePath("PanelContainer/VBoxContainer/Label:text")
+properties/1/path = NodePath(".:is_black_version")
 properties/1/spawn = false
 properties/1/replication_mode = 2
+properties/2/path = NodePath(".:outcome_version")
+properties/2/spawn = false
+properties/2/replication_mode = 2
 
 [node name="GameOverPrompt" type="Control" unique_id=192762231]
 visible = false
@@ -29,45 +32,55 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="PanelContainer" type="PanelContainer" parent="." unique_id=918880305]
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1568377184]
+replication_config = SubResource("SceneReplicationConfig_ob5ct")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1946846716]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -50.0
-offset_top = -20.0
-offset_right = 50.0
-offset_bottom = 20.0
+offset_left = -106.0
+offset_top = -91.5
+offset_right = 106.0
+offset_bottom = 91.5
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer" unique_id=1665801978]
+[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer" unique_id=918880305]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/PanelContainer" unique_id=1665801978]
 custom_minimum_size = Vector2(127, 0)
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="PanelContainer/VBoxContainer" unique_id=1911931151]
+[node name="Label" type="Label" parent="VBoxContainer/PanelContainer/VBoxContainer" unique_id=1911931151]
 layout_mode = 2
-text = "Victory!"
+text = "Victory"
 horizontal_alignment = 1
 
-[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer" unique_id=1041768961]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/PanelContainer/VBoxContainer" unique_id=1041768961]
 layout_mode = 2
 theme_override_constants/separation = 16
 alignment = 1
 
-[node name="RematchButton" type="Button" parent="PanelContainer/VBoxContainer/HBoxContainer" unique_id=94468563]
+[node name="RematchButton" type="Button" parent="VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=94468563]
 custom_minimum_size = Vector2(98, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "Rematch"
 
-[node name="QuitButton" type="Button" parent="PanelContainer/VBoxContainer/HBoxContainer" unique_id=497194117]
+[node name="QuitButton" type="Button" parent="VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=497194117]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "Quit to Menu"
 
-[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1568377184]
-replication_config = SubResource("SceneReplicationConfig_ob5ct")
+[node name="TextureRect" type="TextureRect" parent="VBoxContainer" unique_id=2041859634]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+mouse_filter = 2
+stretch_mode = 3
