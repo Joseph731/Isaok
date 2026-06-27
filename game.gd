@@ -20,11 +20,6 @@ const DRAW = preload("uid://wao6vpt50ohd")
 var consecutive_passes: int = 0
 
 func _ready() -> void:
-	HostStats.host_wins = 0
-	HostStats.host_loses = 0
-	HostStats.host_ties = 0
-	HostStats.host_just_won = false
-	
 	MusicPlayer.stream = KAHOOT_MUSIC
 	
 	turn_timer_host.paused = true

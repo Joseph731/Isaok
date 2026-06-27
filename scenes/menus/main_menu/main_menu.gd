@@ -13,6 +13,9 @@ const GREED_MUSIC = preload("uid://3xefjdj83tsf")
 var options_menu_scene: PackedScene = preload("uid://ckqrgh0lepopt")
 
 func _ready() -> void:
+	HostStats.host_wins = 0
+	HostStats.host_loses = 0
+	HostStats.host_ties = 0
 	HostStats.host_just_won = false
 	if MusicPlayer.stream != GREED_MUSIC:
 		MusicPlayer.stream = GREED_MUSIC

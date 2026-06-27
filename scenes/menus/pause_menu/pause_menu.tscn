@@ -48,6 +48,11 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Resume"
 
+[node name="RematchButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1260254788]
+visible = false
+layout_mode = 2
+text = "Rematch"
+
 [node name="PauseButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1822951499]
 layout_mode = 2
 text = "Request Pause"
@@ -56,11 +61,6 @@ text = "Request Pause"
 unique_name_in_owner = true
 layout_mode = 2
 text = "Options"
-
-[node name="RematchButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1260254788]
-visible = false
-layout_mode = 2
-text = "Rematch"
 
 [node name="QuitButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1543952482]
 unique_name_in_owner = true

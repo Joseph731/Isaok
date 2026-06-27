@@ -16,6 +16,8 @@ signal quit_requested
 var options_menu_scene: PackedScene = preload("uid://ckqrgh0lepopt")
 
 func _ready():
+	update_host_stats_labels()
+	
 	resume_button.pressed.connect(_on_resume_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
 	options_button.pressed.connect(_on_options_pressed)
