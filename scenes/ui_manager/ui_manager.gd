@@ -123,11 +123,14 @@ func create_fifth_moves_count_prompt(is_for_server: bool) -> void:
 	fifth_moves_count_prompt.fifth_moves_count_selected.connect(_on_fifth_moves_count_selected)
 	fifth_moves_count_prompt.is_for_server = is_for_server
 
-func _on_fifth_moves_count_selected(moves_count: int, _fifth_moves_count_prompt: FifthMovesCountPrompt) -> void:
-	handle_fifth_moves_count_selected.rpc_id(1, moves_count)
+func _on_fifth_moves_count_selected(moves_count: int, fifth_moves_count_prompt: FifthMovesCountPrompt) -> void:
+	handle_fifth_moves_count_selected.rpc_id(1, moves_count, fifth_moves_count_prompt.get_path())
 
 @rpc("any_peer", "call_local", "reliable")
-func handle_fifth_moves_count_selected(moves_count: int) -> void:
+func handle_fifth_moves_count_selected(moves_count: int, fifth_moves_count_prompt_path: String) -> void:
+	var fifth_moves_count_prompt: FifthMovesCountPrompt = get_node(fifth_moves_count_prompt_path)
+	if fifth_moves_count_prompt == null:
+		return
 	set_fifth_moves_count_text(moves_count)
 	create_stone_selection_prompt(!(multiplayer.get_remote_sender_id() == 1))
 
