@@ -24,6 +24,10 @@ func _ready() -> void:
 	
 	turn_timer_host.paused = true
 	turn_timer_challenger.paused = true
+	
+	if is_multiplayer_authority():
+		pause_panel.visible = false
+	
 	turn_timer_host.timeout.connect(_on_host_time_out)
 	turn_timer_challenger.timeout.connect(_on_challenger_time_out)
 	pause_menu.quit_requested.connect(network_manager.end_game)
