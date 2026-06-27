@@ -6,8 +6,11 @@ enum GameOverOutcome{VICTORY, DEFEAT, TIE}
 signal rematch_selected
 signal quit_to_main_menu_selected
 
+const BLUE_VICTORY = preload("uid://dky7llcj5ovfs")
+const ISAAC_VICTORY = preload("uid://dcsaeijftlenj")
 const BLUE_DEFEAT = preload("uid://18a4avt18grr")
 const ISAAC_DEFEAT = preload("uid://djstctboekbmb")
+const DRAW = preload("uid://bhyy7mnllq00h")
 
 @onready var rematch_button: Button = $VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer/RematchButton
 @onready var quit_button: Button = $VBoxContainer/PanelContainer/VBoxContainer/HBoxContainer/QuitButton
@@ -57,6 +60,10 @@ func _update_visibility() -> void:
 func change_version() -> void:
 	if outcome_version == GameOverOutcome.VICTORY:
 		label.text = "Victory"
+		if is_black_version:
+			texture_rect.texture = BLUE_VICTORY
+		else:
+			texture_rect.texture = ISAAC_VICTORY
 	elif outcome_version == GameOverOutcome.DEFEAT:
 		label.text = "Defeat"
 		if is_black_version:
@@ -65,3 +72,4 @@ func change_version() -> void:
 			texture_rect.texture = ISAAC_DEFEAT
 	else:
 		label.text = "Tie"
+		texture_rect.texture = DRAW

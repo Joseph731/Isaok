@@ -1,0 +1,59 @@
+[gd_scene format=3 uid="uid://b0ujohmst5o08"]
+
+[ext_resource type="Script" uid="uid://cxri3cum2o5t4" path="res://scenes/menus/how_to_play_menu/how_to_play_menu.gd" id="1_66jd0"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_66jd0"]
+bg_color = Color(0.98039216, 0.98039216, 0.98039216, 1)
+
+[node name="HowToPlayMenu" type="PanelContainer" unique_id=1469813218]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_66jd0")
+script = ExtResource("1_66jd0")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1005989163]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="BackButton" type="Button" parent="MarginContainer" unique_id=1400392585]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "Back"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=411123743]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 9
+alignment = 1
+
+[node name="Label2" type="Label" parent="MarginContainer/VBoxContainer" unique_id=1979249987]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 20
+text = "How to Play"
+horizontal_alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer" unique_id=308745404]
+custom_minimum_size = Vector2(416, 360)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_constants/line_spacing = 1
+text = "- Connecting five stones in a row wins the game!
+
+- Both players start with 10 minute turn timers. When a player completes their turn 30 seconds is added to their timer.
+
+- The game opens using the Soosõrv-8 rule.
+
+- Black has three types of forbidden moves: 
+1. Placing a stone which makes more than one three that can be turned into a straight four by placing one more stone
+2. Placing a stone which makes more than one four
+3. Placing a stone which connects more than five stones in a row
+If a forbidden move would make a row of exactly five stones in a row it may be played."
+autowrap_mode = 2

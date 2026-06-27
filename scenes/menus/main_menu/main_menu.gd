@@ -8,10 +8,12 @@ const GREED_MUSIC = preload("uid://3xefjdj83tsf")
 @onready var options_button: Button = $VBoxContainer/OptionsButton
 
 @onready var multiplayer_menu_scene: PackedScene = load("uid://cx4fmserm6kig")
+@onready var how_to_play_menu_scene: PackedScene = load("uid://b0ujohmst5o08")
 
 var options_menu_scene: PackedScene = preload("uid://ckqrgh0lepopt")
 
 func _ready() -> void:
+	HostStats.host_just_won = false
 	if MusicPlayer.stream != GREED_MUSIC:
 		MusicPlayer.stream = GREED_MUSIC
 	if !MusicPlayer.playing:
@@ -31,7 +33,7 @@ func _ready() -> void:
 
 
 func _on_single_player_button_pressed():
-	pass
+	get_tree().change_scene_to_packed(how_to_play_menu_scene)
 
 func _on_multiplayer_button_pressed():
 	get_tree().change_scene_to_packed(multiplayer_menu_scene)

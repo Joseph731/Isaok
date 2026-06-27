@@ -68,6 +68,9 @@ func _ready() -> void:
 	if !is_multiplayer_authority():
 		return
 	
+	if HostStats.host_just_won:
+		is_servers_turn = false
+	
 	stone_grid.resize(GRID_SIZE)
 	for y in range(GRID_SIZE):
 		# Create the row and strictly enforce that it ONLY holds your Enum/ints
@@ -211,8 +214,20 @@ func place_stone(coords: Vector2i, cell_node_path: String) -> void:
 		
 	if check_win(stone_grid_pos, stone_type):
 		if stone_type == StoneType.BLACK:
-			print("Black Winner!")
-			game_outcome = GameOutcome.BLACK_WIN
+			if check_black_overline(stone_grid_pos):
+				print("Move rejected: Violates overline rule!")
+				stone_grid[coords.y][coords.x] = StoneType.EMPTY # Undo the move
+				stones_on_the_grid -= 1
+				
+				if multiplayer.get_remote_sender_id() == 1:
+					play_rejected_sound.rpc_id(1)
+				elif multiplayer.get_peers().size() > 0:
+					play_rejected_sound.rpc_id(multiplayer.get_peers()[0])
+				
+				return
+			else:
+				print("Black Winner!")
+				game_outcome = GameOutcome.BLACK_WIN
 		else:
 			print("White Winner!")
 			game_outcome = GameOutcome.WHITE_WIN
@@ -278,11 +293,26 @@ func check_win(start_pos: Vector2i, stone_type: StoneType) -> bool:
 		# Check negative direction
 		count += count_in_direction(start_pos, -dir, stone_type)
 		
-		if stone_type == StoneType.BLACK && count == 5:
-			return true
-		elif stone_type == StoneType.WHITE && count >= 5:
+		if count >= 5:
 			return true
 	return false
+
+func check_black_overline(start_pos: Vector2i) -> bool:
+	var overline_exists: bool = false
+	for dir in DIRECTIONS:
+		var count = 1 # Count the piece just placed
+		
+		# Check positive direction
+		count += count_in_direction(start_pos, dir, StoneType.BLACK)
+		# Check negative direction
+		count += count_in_direction(start_pos, -dir, StoneType.BLACK)
+		
+		#if the move would win black the game with a 5 connection overlines don't matter
+		if count == 5:
+			return false
+		if count > 5:
+			overline_exists = true
+	return overline_exists
 
 func count_in_direction(start_pos: Vector2i, direction: Vector2i, stone_type: StoneType) -> int:
 	var count = 0

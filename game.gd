@@ -2,6 +2,9 @@ extends Node
 
 const MAIN_MENU_SCENE_PATH: String = "res://scenes/menus/main_menu/main_menu.tscn"
 const KAHOOT_MUSIC = preload("uid://d2nyr17by2e02")
+const WIN = preload("uid://seuy6pfpjqut")
+const LOSE = preload("uid://dwntwhjhmp11k")
+const DRAW = preload("uid://wao6vpt50ohd")
 
 @onready var grid_manager: GridManager = $GridManager
 @onready var ui_manager: UIManager = $UIManager
@@ -12,6 +15,7 @@ const KAHOOT_MUSIC = preload("uid://d2nyr17by2e02")
 @onready var pause_panel: PanelContainer = $PausePanel
 @onready var garrosh_player: AudioStreamPlayer = $GarroshPlayer
 @onready var stone_plop_player: AudioStreamPlayer = $StonePlopPlayer
+@onready var game_over_player: AudioStreamPlayer = $GameOverPlayer
 
 var consecutive_passes: int = 0
 
@@ -63,22 +67,16 @@ func _on_stone_selection_prompt_stone_selected(stone_type: GridManager.StoneType
 
 @rpc("any_peer", "call_local", "reliable")
 func handle_stone_selection_prompt_stone_selected(stone_type: GridManager.StoneType, stone_selection_prompt_path: String) -> void:
+	var stone_selection_prompt: StoneSelectionPrompt = get_node(stone_selection_prompt_path)
 	if grid_manager.game_outcome != GridManager.GameOutcome.UNDECIDED:
+		stone_selection_prompt.queue_free()
 		return
 	
-	var stone_selection_prompt: StoneSelectionPrompt = get_node(stone_selection_prompt_path)
-	
-	if grid_manager.game_state == GridManager.GameState.SECOND:
+	if grid_manager.game_state == GridManager.GameState.SECOND && stone_type == grid_manager.StoneType.BLACK:
 		if stone_selection_prompt.is_for_server:
-			if stone_type == grid_manager.StoneType.WHITE:
-				turn_timer_host.start(turn_timer_host.time_left - 30)
-			else:
-				turn_timer_host.paused = false
+			turn_timer_host.paused = false
 		else:
-			if stone_type == grid_manager.StoneType.WHITE:
-				turn_timer_challenger.start(turn_timer_challenger.time_left - 30)
-			else:
-				turn_timer_challenger.paused = false
+			turn_timer_challenger.paused = false
 	
 	if stone_selection_prompt.is_for_server:
 		grid_manager.set_servers_stone_type(stone_type)
@@ -133,11 +131,13 @@ func _on_challenger_time_out() -> void:
 
 func _on_turn_switched(is_servers_turn: bool) -> void:
 	if is_servers_turn:
-		turn_timer_challenger.start(turn_timer_challenger.time_left + 30)
+		if grid_manager.game_state != GridManager.GameState.SECOND:
+			turn_timer_challenger.start(turn_timer_challenger.time_left + 30)
 		turn_timer_challenger.paused = true
 		turn_timer_host.paused = false
 	else:
-		turn_timer_host.start(turn_timer_host.time_left + 30)
+		if grid_manager.game_state != GridManager.GameState.SECOND:
+			turn_timer_host.start(turn_timer_host.time_left + 30)
 		turn_timer_host.paused = true
 		turn_timer_challenger.paused = false
 
@@ -164,6 +164,31 @@ func _on_game_outcome_decided(game_outcome: GridManager.GameOutcome) -> void:
 		HostStats.host_ties += 1
 		HostStats.host_just_won = false
 	pause_menu.update_host_stats_labels()
+	
+	if game_outcome == GridManager.GameOutcome.DRAW:
+		set_game_over_player.rpc(GameOverPrompt.GameOverOutcome.TIE)
+	elif HostStats.host_just_won:
+		set_game_over_player.rpc_id(1, GameOverPrompt.GameOverOutcome.VICTORY)
+		if multiplayer.get_peers().size() > 0:
+			set_game_over_player.rpc_id(multiplayer.get_peers()[0], GameOverPrompt.GameOverOutcome.DEFEAT)
+	else:
+		set_game_over_player.rpc_id(1, GameOverPrompt.GameOverOutcome.DEFEAT)
+		if multiplayer.get_peers().size() > 0:
+			set_game_over_player.rpc_id(multiplayer.get_peers()[0], GameOverPrompt.GameOverOutcome.VICTORY)
+	play_game_over_sound.rpc()
+
+@rpc("authority", "call_local", "unreliable")
+func set_game_over_player(game_over_outcome: GameOverPrompt.GameOverOutcome) -> void:
+	if game_over_outcome == GameOverPrompt.GameOverOutcome.VICTORY:
+		game_over_player.stream = WIN
+	elif game_over_outcome == GameOverPrompt.GameOverOutcome.DEFEAT:
+		game_over_player.stream = LOSE
+	else:
+		game_over_player.stream = DRAW
+
+@rpc("authority", "call_local", "unreliable")
+func play_game_over_sound() -> void:
+	game_over_player.play()
 
 func _on_pass_button_pressed() -> void:
 	handle_pass_button_pressed.rpc_id(1)

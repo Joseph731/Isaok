@@ -3,6 +3,8 @@
 [ext_resource type="Script" uid="uid://b5awjwursfhwo" path="res://scenes/menus/multiplayer_menu/multiplayer_menu.gd" id="1_tvsvp"]
 [ext_resource type="PackedScene" uid="uid://ccdmiiqfx77gb" path="res://scenes/background/background.tscn" id="2_tn16a"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tn16a"]
+
 [node name="MultiplayerMenu" type="MarginContainer" unique_id=1865083585]
 anchors_preset = 15
 anchor_right = 1.0
@@ -99,6 +101,7 @@ mouse_filter = 0
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_tn16a")
 
 [node name="MarginContainer" type="MarginContainer" parent="ErrorContainer/PanelContainer" unique_id=365206981]
 layout_mode = 2
@@ -112,20 +115,23 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="ErrorContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=1410832921]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.129412, 0.592157, 0.941176, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
 text = "Error!"
 
 [node name="ClientErrorLabel" type="Label" parent="ErrorContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=74385793]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.129412, 0.592157, 0.941176, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
 text = "An error occurred when connecting to the server."
 
 [node name="ServerErrorLabel" type="Label" parent="ErrorContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=1824292384]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
-theme_override_colors/font_color = Color(0.129412, 0.592157, 0.941176, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
 text = "An error occurred when creating the server."
 
 [node name="ErrorConfirmButton" type="Button" parent="ErrorContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=1157675803]

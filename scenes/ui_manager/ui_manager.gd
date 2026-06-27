@@ -138,7 +138,7 @@ func _on_fifth_move_finished() -> void:
 	for banned_stone in banned_stones:
 		banned_stone.queue_free()
 	banned_stones.clear()
-	center_label.text = "Choose black's fifth move"
+	center_label.text = "Choose Black's fifth move"
 
 func _on_choose_move_finished() -> void:
 	for fifth_stone in fifth_stones:

@@ -16,6 +16,7 @@ extends MarginContainer
 
 var game_scene: PackedScene = preload("uid://c08fg1xiroqwb")
 var is_connecting: bool
+var trying_to_connect: bool = false
 
 
 func _ready():
@@ -51,7 +52,7 @@ func validate():
 	var port := port_text_edit.text
 	if port.is_valid_int():
 		MultiplayerConfig.port = int(port)
-		if MultiplayerConfig.port <= 0:
+		if MultiplayerConfig.port <= 0 || MultiplayerConfig.port > 65535:
 			MultiplayerConfig.port = -1
 	else:
 		MultiplayerConfig.port = -1
@@ -108,7 +109,8 @@ func _on_connected_to_server():
 
 
 func _on_back_pressed():
-	get_tree().change_scene_to_packed(main_menu_scene)
+	if !is_connecting:
+		get_tree().change_scene_to_packed(main_menu_scene)
 
 
 func _on_text_changed():
