@@ -219,8 +219,6 @@ func _on_pause_requested() -> void:
 
 @rpc("any_peer", "call_local", "reliable")
 func handle_pause_request() -> void:
-	if grid_manager.game_outcome != GridManager.GameOutcome.UNDECIDED:
-		return
 	if multiplayer.get_remote_sender_id() == 1:
 		ui_manager.create_pause_request_prompt(false)
 	else:
@@ -244,8 +242,6 @@ func _on_pause_request_prompt_answered(answer_is_yes: bool, pause_request_prompt
 @rpc("any_peer", "call_local", "reliable")
 func handle_pause_request_prompt_answered(answer_is_yes: bool, pause_request_prompt_path: String) -> void:
 	get_node(pause_request_prompt_path).queue_free()
-	if grid_manager.game_outcome != GridManager.GameOutcome.UNDECIDED:
-		return
 	if answer_is_yes:
 		pause_game()
 
@@ -253,12 +249,15 @@ func pause_game() -> void:
 	pause_panel.visible = !pause_panel.visible
 	if pause_panel.visible:
 		pause_menu.pause_button.text = "Request Unpause"
+		pause_menu.rematch_button.visible = false
 		turn_timer_host.paused = true
 		turn_timer_challenger.paused = true
 	else:
 		pause_menu.pause_button.text = "Request Pause"
+		if grid_manager.game_outcome != GridManager.GameOutcome.UNDECIDED:
+			pause_menu.rematch_button.visible = true
 		#Servers stone is only 0 when the game hasn't started yet
-		if grid_manager.servers_stone != 0:
+		if grid_manager.servers_stone != 0 && grid_manager.game_outcome == GridManager.GameOutcome.UNDECIDED:
 			if grid_manager.is_servers_turn:
 				turn_timer_host.paused = false
 			else:
