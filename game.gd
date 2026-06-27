@@ -55,6 +55,7 @@ func play_garrosh_sound() -> void:
 	garrosh_player.play()
 
 func _on_stone_selection_prompt_created(stone_selection_prompt: StoneSelectionPrompt) -> void:
+	grid_manager.input_blocking_prompt_is_up = true
 	stone_selection_prompt.stone_selected.connect(_on_stone_selection_prompt_stone_selected)
 
 func _on_stone_selection_prompt_stone_selected(stone_type: GridManager.StoneType, stone_selection_prompt: StoneSelectionPrompt) -> void:
@@ -62,9 +63,15 @@ func _on_stone_selection_prompt_stone_selected(stone_type: GridManager.StoneType
 
 @rpc("any_peer", "call_local", "reliable")
 func handle_stone_selection_prompt_stone_selected(stone_type: GridManager.StoneType, stone_selection_prompt_path: String) -> void:
+	if grid_manager.game_is_paused:
+		return
 	var stone_selection_prompt: StoneSelectionPrompt = get_node(stone_selection_prompt_path)
+	if stone_selection_prompt == null:
+		return
+	
 	if grid_manager.game_outcome != GridManager.GameOutcome.UNDECIDED:
 		stone_selection_prompt.queue_free()
+		grid_manager.input_blocking_prompt_is_up = false
 		return
 	
 	if grid_manager.game_state == GridManager.GameState.SECOND && stone_type == grid_manager.StoneType.BLACK:
@@ -82,8 +89,10 @@ func handle_stone_selection_prompt_stone_selected(stone_type: GridManager.StoneT
 			grid_manager.set_servers_stone_type(GridManager.StoneType.BLACK)
 	
 	stone_selection_prompt.queue_free()
+	grid_manager.input_blocking_prompt_is_up = false
 
 func _on_fifth_moves_count_prompt_created(fifth_moves_count_prompt: FifthMovesCountPrompt) -> void:
+	grid_manager.input_blocking_prompt_is_up = true
 	fifth_moves_count_prompt.fifth_moves_count_selected.connect(_on_fifth_moves_count_prompt_count_selected)
 
 func _on_fifth_moves_count_prompt_count_selected(moves_count: int, fifth_moves_count_prompt: FifthMovesCountPrompt) -> void:
@@ -91,8 +100,14 @@ func _on_fifth_moves_count_prompt_count_selected(moves_count: int, fifth_moves_c
 
 @rpc("any_peer", "call_local", "reliable")
 func handle_fifth_moves_count_prompt_count_selected(moves_count: int, fifth_moves_count_prompt_path: String) -> void:
+	if grid_manager.game_is_paused:
+		return
 	var fifth_moves_count_prompt: FifthMovesCountPrompt = get_node(fifth_moves_count_prompt_path)
+	if fifth_moves_count_prompt == null:
+		return
 	fifth_moves_count_prompt.queue_free()
+	grid_manager.input_blocking_prompt_is_up = false
+	
 	if grid_manager.game_outcome != GridManager.GameOutcome.UNDECIDED:
 		return
 	grid_manager.switch_whose_turn_it_is()
@@ -108,7 +123,10 @@ func _on_game_over_prompt_background_button_pressed(game_over_prompt: GameOverPr
 
 @rpc("any_peer", "call_local", "reliable")
 func handle_game_over_prompt_background_button_pressed(game_over_prompt_path: String) -> void:
-	get_node(game_over_prompt_path).queue_free()
+	var game_over_prompt: GameOverPrompt = get_node(game_over_prompt_path)
+	if game_over_prompt == null:
+		return
+	game_over_prompt.queue_free()
 
 func _on_host_time_out() -> void:
 	print("Challenger wins!")
@@ -190,6 +208,8 @@ func _on_pass_button_pressed() -> void:
 
 @rpc("any_peer", "call_local", "reliable")
 func handle_pass_button_pressed():
+	if grid_manager.game_is_paused || grid_manager.game_outcome != GridManager.GameOutcome.UNDECIDED || grid_manager.game_state != GridManager.GameState.NORMAL:
+		return
 	if !((multiplayer.get_remote_sender_id() == 1 && grid_manager.is_servers_turn) || (multiplayer.get_remote_sender_id() != 1 && !grid_manager.is_servers_turn)):
 		return
 	increment_consecutivie_passes()
@@ -229,6 +249,8 @@ func _on_rematch_requested() -> void:
 
 @rpc("any_peer", "call_local", "reliable")
 func handle_rematch_request() -> void:
+	if grid_manager.game_is_paused || grid_manager.game_outcome == grid_manager.GameOutcome.UNDECIDED:
+		return
 	get_tree().reload_current_scene()
 
 func _on_pause_request_prompt_created(pause_request_prompt: PauseRequestPrompt) -> void:
@@ -241,7 +263,10 @@ func _on_pause_request_prompt_answered(answer_is_yes: bool, pause_request_prompt
 
 @rpc("any_peer", "call_local", "reliable")
 func handle_pause_request_prompt_answered(answer_is_yes: bool, pause_request_prompt_path: String) -> void:
-	get_node(pause_request_prompt_path).queue_free()
+	var pause_request_prompt: PauseRequestPrompt = get_node(pause_request_prompt_path)
+	if pause_request_prompt == null:
+		return
+	pause_request_prompt.queue_free()
 	if answer_is_yes:
 		pause_game()
 
@@ -249,11 +274,13 @@ func pause_game() -> void:
 	pause_panel.visible = !pause_panel.visible
 	if pause_panel.visible:
 		pause_menu.pause_button.text = "Request Unpause"
+		grid_manager.game_is_paused = true
 		pause_menu.rematch_button.visible = false
 		turn_timer_host.paused = true
 		turn_timer_challenger.paused = true
 	else:
 		pause_menu.pause_button.text = "Request Pause"
+		grid_manager.game_is_paused = false
 		if grid_manager.game_outcome != GridManager.GameOutcome.UNDECIDED:
 			pause_menu.rematch_button.visible = true
 		#Servers stone is only 0 when the game hasn't started yet

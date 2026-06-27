@@ -43,6 +43,8 @@ var fifth_moves_count: int = 0
 var grid_symmetry_data: Dictionary
 var stones_on_the_grid: int = 0
 var have_swapped_before: bool = false
+var input_blocking_prompt_is_up: bool = false
+var game_is_paused: bool = false
 
 var _game_outcome: GameOutcome = GameOutcome.UNDECIDED
 var game_outcome: GameOutcome:
@@ -127,7 +129,7 @@ func place_stone(coords: Vector2i, cell_node_path: String) -> void:
 	else:
 		if is_servers_turn:
 			return
-	if game_outcome != GameOutcome.UNDECIDED:
+	if game_outcome != GameOutcome.UNDECIDED || input_blocking_prompt_is_up || game_is_paused:
 		return
 	#check if coords is in 3x3 in center of board
 	if game_state == GameState.SECOND && !coords_in_area(coords, Vector2i(6,6), 3):
