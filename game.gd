@@ -16,6 +16,7 @@ const DRAW = preload("uid://wao6vpt50ohd")
 @onready var garrosh_player: AudioStreamPlayer = $GarroshPlayer
 @onready var stone_plop_player: AudioStreamPlayer = $StonePlopPlayer
 @onready var game_over_player: AudioStreamPlayer = $GameOverPlayer
+@onready var pause_menu_button: Button = $PauseMenuButton
 
 var consecutive_passes: int = 0
 
@@ -28,6 +29,7 @@ func _ready() -> void:
 	if is_multiplayer_authority():
 		pause_panel.visible = false
 	
+	pause_menu_button.pressed.connect(pause_menu.pause)
 	turn_timer_host.timeout.connect(_on_host_time_out)
 	turn_timer_challenger.timeout.connect(_on_challenger_time_out)
 	pause_menu.quit_requested.connect(network_manager.end_game)

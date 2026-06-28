@@ -17,6 +17,13 @@ properties/0/path = NodePath("PausePanel:visible")
 properties/0/spawn = false
 properties/0/replication_mode = 2
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_j5wjh"]
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
 [node name="Game" type="Node" unique_id=554959532]
 script = ExtResource("1_feb5d")
 
@@ -82,3 +89,12 @@ bus = &"sfx"
 
 [node name="GameOverPlayer" type="AudioStreamPlayer" parent="." unique_id=378160405]
 bus = &"sfx"
+
+[node name="PauseMenuButton" type="Button" parent="." unique_id=700864325]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -12.0
+offset_bottom = 12.0
+grow_horizontal = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_j5wjh")
