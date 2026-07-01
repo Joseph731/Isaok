@@ -49,11 +49,13 @@ turn_timer_challenger = NodePath("../TurnTimerChallenger")
 [node name="NetworkManager" parent="." unique_id=57909923 instance=ExtResource("5_ryrav")]
 
 [node name="TurnTimerHost" type="Timer" parent="." unique_id=1659935680]
+process_mode = 3
 wait_time = 600.0
 one_shot = true
 autostart = true
 
 [node name="TurnTimerChallenger" type="Timer" parent="." unique_id=1751517430]
+process_mode = 3
 wait_time = 600.0
 one_shot = true
 autostart = true

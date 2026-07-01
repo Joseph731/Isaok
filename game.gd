@@ -17,11 +17,18 @@ const DRAW = preload("uid://wao6vpt50ohd")
 @onready var stone_plop_player: AudioStreamPlayer = $StonePlopPlayer
 @onready var game_over_player: AudioStreamPlayer = $GameOverPlayer
 @onready var pause_menu_button: Button = $PauseMenuButton
+@onready var timers_to_protect: Array[Timer] = [
+	turn_timer_host,
+	turn_timer_challenger
+]
 
 var consecutive_passes: int = 0
+var last_frame_time_msec: int = 0
 
 func _ready() -> void:
 	MusicPlayer.stream = KAHOOT_MUSIC
+	
+	last_frame_time_msec = Time.get_ticks_msec()
 	
 	turn_timer_host.paused = true
 	turn_timer_challenger.paused = true
@@ -44,7 +51,7 @@ func _ready() -> void:
 	grid_manager.game_outcome_decided.connect(_on_game_outcome_decided)
 	grid_manager.stone_placed.connect(_on_stone_placed)
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if is_multiplayer_authority() && grid_manager.game_outcome == grid_manager.GameOutcome.UNDECIDED:
 		if turn_timer_host.time_left < 30 || turn_timer_challenger.time_left < 30:
 			if !MusicPlayer.playing:
@@ -55,6 +62,40 @@ func _process(_delta: float) -> void:
 					play_garrosh_sound.rpc_id(multiplayer.get_peers()[0])
 		elif MusicPlayer.playing:
 			MusicPlayer.stop_music_player.rpc()
+		
+		var current_time_msec = Time.get_ticks_msec()
+		# Calculate how much real-world time actually passed since the last frame
+		var real_delta_seconds = (current_time_msec - last_frame_time_msec) / 1000.0
+		
+		# Threshold: If the gap is greater than 1.0 second, the browser tab was asleep
+		if real_delta_seconds > 1.0:
+			# Godot is already going to subtract the standard frame 'delta' right now,
+			# so the 'extra' time lost that Godot doesn't know about is:
+			var extra_time_lost = real_delta_seconds - delta
+			
+			print("Browser tab woke up! Catching up timers by: ", extra_time_lost, " seconds.")
+			_catch_up_timer_nodes(extra_time_lost)
+		
+		# Always update the timestamp for the next frame
+		last_frame_time_msec = current_time_msec
+
+func _catch_up_timer_nodes(seconds_lost: float) -> void:
+	for timer in timers_to_protect:
+		# Skip if the timer isn't currently active
+		if timer.paused:
+			continue
+		
+		# Calculate what the new time_left should be
+		var new_time_left = timer.time_left - seconds_lost
+		
+		if new_time_left > 0:
+			# If there's still time left, restart it with the corrected time
+			timer.start(new_time_left)
+		else:
+			# If the timer should have finished while the browser was closed,
+			# trigger its timeout signal immediately!
+			timer.emit_signal("timeout")
+			timer.stop()
 
 @rpc("authority", "call_local", "unreliable")
 func play_garrosh_sound() -> void:
@@ -69,7 +110,7 @@ func _on_stone_selection_prompt_stone_selected(stone_type: GridManager.StoneType
 
 @rpc("any_peer", "call_local", "reliable")
 func handle_stone_selection_prompt_stone_selected(stone_type: GridManager.StoneType, stone_selection_prompt_path: String) -> void:
-	if grid_manager.game_is_paused:
+	if grid_manager.game_is_paused || !grid_manager.input_blocking_prompt_is_up:
 		return
 	var stone_selection_prompt: StoneSelectionPrompt = get_node(stone_selection_prompt_path)
 	if stone_selection_prompt == null:
@@ -106,7 +147,7 @@ func _on_fifth_moves_count_prompt_count_selected(moves_count: int, fifth_moves_c
 
 @rpc("any_peer", "call_local", "reliable")
 func handle_fifth_moves_count_prompt_count_selected(moves_count: int, fifth_moves_count_prompt_path: String) -> void:
-	if grid_manager.game_is_paused:
+	if grid_manager.game_is_paused || !grid_manager.input_blocking_prompt_is_up:
 		return
 	var fifth_moves_count_prompt: FifthMovesCountPrompt = get_node(fifth_moves_count_prompt_path)
 	if fifth_moves_count_prompt == null:
@@ -257,6 +298,8 @@ func _on_rematch_requested() -> void:
 func handle_rematch_request() -> void:
 	if grid_manager.game_is_paused || grid_manager.game_outcome == grid_manager.GameOutcome.UNDECIDED:
 		return
+	#ADDED TO TRIGGER ABOVE RETURN TO FIX CRASH BUG ON REMATCH
+	grid_manager.game_is_paused = true
 	get_tree().reload_current_scene()
 
 func _on_pause_request_prompt_created(pause_request_prompt: PauseRequestPrompt) -> void:

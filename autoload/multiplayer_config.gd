@@ -6,7 +6,7 @@ signal host_disconnected
 var signaling_peer: WebSocketPeer = WebSocketPeer.new()
 var rtc_peer: WebRTCMultiplayerPeer = WebRTCMultiplayerPeer.new()
 
-const SIGNAL_URL = "ws://34.169.201.182:8080"
+const SIGNAL_URL = "wss://my-godot-signaling.onrender.com"
 var current_room: String = ""
 var is_host: bool = false
 var is_connecting = false # <-- ADD THIS to track if we are in the loading phase
