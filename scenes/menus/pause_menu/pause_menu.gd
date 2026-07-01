@@ -11,11 +11,16 @@ signal quit_requested
 @onready var host_wins_label: Label = $MarginContainer/VBoxContainer2/HostWinsLabel
 @onready var host_loses_label: Label = $MarginContainer/VBoxContainer2/HostLosesLabel
 @onready var host_ties_label: Label = $MarginContainer/VBoxContainer2/HostTiesLabel
+@onready var room_code_label: Label = $MarginContainer/RoomCodeLabel
 
 
 var options_menu_scene: PackedScene = preload("uid://ckqrgh0lepopt")
 
 func _ready():
+	room_code_label.text += MultiplayerConfig.current_room
+	if is_multiplayer_authority():
+		room_code_label.visible = true
+	
 	update_host_stats_labels()
 	
 	resume_button.pressed.connect(_on_resume_pressed)

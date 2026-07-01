@@ -105,5 +105,13 @@ theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 20
 text = "Ties: 0"
 
+[node name="RoomCodeLabel" type="Label" parent="MarginContainer" unique_id=1036441931]
+visible = false
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
+text = "Room Code: "
+
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1012625708]
 replication_config = SubResource("SceneReplicationConfig_fgv3k")

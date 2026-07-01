@@ -24,12 +24,13 @@ buses/default_bus_layout="uid://d2ceprxg3taje"
 
 UIAudioManager="*uid://cpq7wtsob8llb"
 MusicPlayer="*uid://hxc47txegwms"
+MultiplayerConfig="*uid://ov5qp81pamwp"
 
 [display]
 
 window/size/viewport_width=448
 window/size/viewport_height=468
-window/stretch/mode="viewport"
+window/stretch/mode="canvas_items"
 
 [input]
 

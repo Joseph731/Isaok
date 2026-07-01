@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://ov5qp81pamwp"]
+
+[ext_resource type="Script" uid="uid://c0sdv2c1itd5e" path="res://autoload/multiplayer_config.gd" id="1_6gwqk"]
+
+[node name="MultiplayerConfig" type="Node" unique_id=1193128922]
+script = ExtResource("1_6gwqk")
